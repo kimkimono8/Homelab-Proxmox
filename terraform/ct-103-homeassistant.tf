@@ -1,7 +1,7 @@
 resource "proxmox_virtual_environment_container" "homeassistant" {
-  description = "Home Assistant Core (Managed by Terraform)"
-  node_name   = "pve"
-  vm_id       = 103
+  description  = "Home Assistant Core (Managed by Terraform)"
+  node_name    = "pve"
+  vm_id        = 103
   unprivileged = true
 
   initialization {
