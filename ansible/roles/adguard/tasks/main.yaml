@@ -1,0 +1,34 @@
+---
+- name: Install prerequisite packages
+  ansible.builtin.apt:
+    name:
+      - curl
+      - tar
+      - ca-certificates
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Create AdGuard Home installation directory
+  ansible.builtin.file:
+    path: /opt/AdGuardHome
+    state: directory
+    mode: '0755'
+
+- name: Download and extract AdGuard Home binary
+  ansible.builtin.unarchive:
+    src: https://github.com/AdguardTeam/AdGuardHome/releases/latest/download/AdGuardHome_linux_amd64.tar.gz
+    dest: /opt
+    remote_src: yes
+    creates: /opt/AdGuardHome/AdGuardHome
+
+- name: Register and install AdGuard Home as a Systemd service
+  ansible.builtin.command:
+    cmd: /opt/AdGuardHome/AdGuardHome -s install
+    creates: /etc/systemd/system/AdGuardHome.service
+
+- name: Ensure AdGuard Home service is enabled and running
+  ansible.builtin.systemd:
+    name: AdGuardHome
+    enabled: yes
+    state: started
