@@ -1,0 +1,77 @@
+name: "CI - Quality & Security Gates"
+
+on:
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+  pull_request:
+    branches: [ "main" ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+
+jobs:
+  security-scan:
+    name: "Secret Leak Detection"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  terraform-validate:
+    name: "Terraform Lint & Validate"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./terraform
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.0"
+
+      - name: Check HCL Format
+        run: terraform fmt -check -diff
+
+      - name: Terraform Init (Backend Mock)
+        run: terraform init -backend=false
+
+      - name: Validate Schema
+        run: terraform validate
+
+  ansible-validate:
+    name: "Ansible Dynamic Syntax Check"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./ansible
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Dependencies
+        run: pip install ansible
+
+      - name: Dynamic Syntax Check All Playbooks
+        run: |
+          find playbooks/ -maxdepth 1 -type f \( -name "*.yaml" -o -name "*.yml" \) -exec \
+            ansible-playbook -i inventory/hosts.yaml {} --syntax-check +

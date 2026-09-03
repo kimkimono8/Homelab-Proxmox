@@ -5,6 +5,7 @@ Declarative, enterprise-grade Homelab infrastructure running on Proxmox VE (Dell
 ---
 
 ## 📐 Architecture & Key Tenets
+* **Automated Quality Gates (CI):** GitHub Actions pipeline enforcing secret leak detection, HCL validation, and dynamic Ansible syntax checks on every push.
 
 * **Infrastructure as Code (Day 0):** Automated resource provisioning via Terraform/OpenTofu and the `bpg/proxmox` provider.
 * **Configuration Management (Day 1/2):** Modular Ansible playbooks and roles for OS hardening, systemd lifecycle, and application delivery.
