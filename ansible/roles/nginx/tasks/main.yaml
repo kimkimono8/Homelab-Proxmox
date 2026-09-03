@@ -1,0 +1,37 @@
+---
+- name: Install NGINX web server
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Ensure default NGINX welcome site is disabled
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Validate and reload nginx
+
+- name: Deploy virtual host configurations
+  ansible.builtin.template:
+    src: vhost.conf.j2
+    dest: "/etc/nginx/sites-available/{{ item.domain }}.conf"
+    owner: root
+    group: root
+    mode: '0644'
+  loop: "{{ nginx_virtual_hosts }}"
+  notify: Validate and reload nginx
+
+- name: Enable virtual host configurations
+  ansible.builtin.file:
+    src: "/etc/nginx/sites-available/{{ item.domain }}.conf"
+    dest: "/etc/nginx/sites-enabled/{{ item.domain }}.conf"
+    state: link
+  loop: "{{ nginx_virtual_hosts }}"
+  notify: Validate and reload nginx
+
+- name: Ensure NGINX service is enabled and active
+  ansible.builtin.systemd:
+    name: nginx
+    enabled: yes
+    state: started
