@@ -52,6 +52,7 @@ Homelab-Proxmox/
     └── roles/
         └── adguard/            # AdGuard service orchestration role
             └── tasks/main.yaml
+```
 
 ---
 
