@@ -9,3 +9,11 @@ secrets/
 Thumbs.db
 desktop.ini
 .BIN/
+
+# Terraform
+**/.terraform/
+*.tfvars
+*.tfvars.json
+*.tfstate
+*.tfstate.*
+crash.log
