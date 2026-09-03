@@ -1,0 +1,11 @@
+# Credentials & Sensitive data
+*.pem
+*.key
+id_*
+*.env
+secrets/
+
+# Windows OS metadata
+Thumbs.db
+desktop.ini
+.BIN/
