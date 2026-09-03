@@ -56,16 +56,20 @@ Homelab-Proxmox/
 
 ---
 
-🚀 Quickstart & Provisioning Workflow
-1. Provision Compute (IaC):
+## 🚀 Quickstart & Provisioning Workflow
 
-Bash
+**1. Provision Compute (IaC):**
+
+```Bash
 cd terraform
 terraform init
 terraform apply
-2. Configure Nodes (Ansible):
+```
 
-Bash
+**2. Configure Nodes (Ansible):**
+
+```Bash
 cd ../ansible
 ansible all -m ping
 ansible-playbook playbooks/deploy-adguard.yaml
+```
