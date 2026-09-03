@@ -9,7 +9,7 @@ Infrastructure as Code and GitOps repository for personal homelab running on Pro
 | **VM 200 (VM)** | rocky-lab | Rocky Linux (Enterprise Testing) | 2048 MB |
 | **CT 100 (LXC)** | adguard | AdGuard Home (DNS & Ingress Base) | 128 MB |
 | **CT 101 (LXC)** | npm | Nginx Proxy Manager (Reverse Proxy) | 256 MB |
-| **CT 102 (LXC)** | control-node | Ansible Control Node & GitOps Manager | 512 MB |
+| **CT 102 (LXC)** | Arch-server | Primary Remote Workstation, Bastion & GitOps Control | 512 MB |
 | **CT 103 (LXC)** | home-assistant | Home Assistant Core | 512 MB |
 | **CT 104 (LXC)** | jellyfin | Jellyfin Media Server | 1024 MB |
 | **CT 105 (LXC)** | deluge | Deluge Torrent Daemon | 256 MB |
