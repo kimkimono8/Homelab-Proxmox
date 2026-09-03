@@ -1,0 +1,10 @@
+all:
+  children:
+    dns_servers:
+      hosts:
+        adguard:
+          ansible_host: 192.168.1.21
+    proxmox_nodes:
+      hosts:
+        pve:
+          ansible_host: 192.168.1.20
