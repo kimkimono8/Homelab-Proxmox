@@ -52,14 +52,17 @@ Homelab-Proxmox/
     └── roles/
         └── adguard/            # AdGuard service orchestration role
             └── tasks/main.yaml
+
+---
+
 🚀 Quickstart & Provisioning Workflow
-Provision Compute (IaC):
+1. Provision Compute (IaC):
 
 Bash
 cd terraform
 terraform init
 terraform apply
-Configure Nodes (Ansible):
+2. Configure Nodes (Ansible):
 
 Bash
 cd ../ansible
