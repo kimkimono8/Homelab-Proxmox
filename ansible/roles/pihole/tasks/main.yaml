@@ -71,6 +71,17 @@
       {% endfor %}
   notify: Reload pihole dns
 
+- name: Disable internal NTP client in Pi-hole v6 to prevent unprivileged capability error
+  ansible.builtin.command:
+    cmd: pihole-FTL --config ntp.ipv4.active false
+  changed_when: false
+
+- name: Ensure pihole-FTL service is running and enabled
+  ansible.builtin.systemd:
+    name: pihole-FTL
+    state: restarted
+    enabled: yes
+
 - name: Ensure pihole-FTL service is running and enabled
   ansible.builtin.systemd:
     name: pihole-FTL
