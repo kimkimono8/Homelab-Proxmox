@@ -1,0 +1,4 @@
+# บังคับให้นับ YAML และ Jinja2 ในหน้าสถิติภาษาของ GitHub
+*.yaml linguist-detectable=true
+*.yml linguist-detectable=true
+*.j2 linguist-detectable=true
