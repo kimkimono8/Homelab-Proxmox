@@ -1,0 +1,57 @@
+---
+- name: Install prerequisite baseline packages
+  ansible.builtin.apt:
+    name:
+      - curl
+      - gnupg
+      - ca-certificates
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Ensure keyrings directory exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Download Jellyfin official GPG signing key
+  ansible.builtin.get_url:
+    url: https://repo.jellyfin.org/jellyfin_team.gpg.key
+    dest: /etc/apt/keyrings/jellyfin.asc
+    mode: '0644'
+    force: yes
+
+- name: Remove legacy repository files if exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/apt/sources.list.d/jellyfin.list
+    - /etc/apt/keyrings/jellyfin.gpg
+
+- name: Configure Jellyfin APT repository (deb822 format)
+  ansible.builtin.deb822_repository:
+    name: jellyfin
+    types: [deb]
+    uris: "https://repo.jellyfin.org/debian"
+    suites: ["{{ ansible_facts['distribution_release'] }}"]
+    components: [main]
+    architectures: [amd64]
+    signed_by: /etc/apt/keyrings/jellyfin.asc
+    state: present
+
+- name: Force update apt cache for new repository
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: Install Jellyfin media server metapackage
+  ansible.builtin.apt:
+    name: jellyfin
+    state: present
+
+- name: Ensure Jellyfin service is enabled and started
+  ansible.builtin.systemd:
+    name: jellyfin
+    enabled: yes
+    state: started

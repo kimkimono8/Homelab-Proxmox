@@ -1,0 +1,8 @@
+---
+- name: Deploy and Configure Declarative Pi-hole DNS Node
+  hosts: core_network
+  tasks:
+    - name: Run Pi-hole role exclusively on CT 100
+      ansible.builtin.import_role:
+        name: pihole
+      when: inventory_hostname == 'adguard'

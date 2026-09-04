@@ -1,0 +1,9 @@
+---
+- name: Restart pihole-FTL
+  ansible.builtin.systemd:
+    name: pihole-FTL
+    state: restarted
+
+- name: Reload pihole dns
+  ansible.builtin.command:
+    cmd: pihole reloaddns

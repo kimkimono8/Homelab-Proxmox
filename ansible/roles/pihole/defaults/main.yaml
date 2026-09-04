@@ -1,0 +1,18 @@
+---
+pihole_interface: "eth0"
+pihole_ipv4_address: "192.168.1.21/24"
+pihole_gateway: "192.168.1.1"
+pihole_dns_1: "1.1.1.1"
+pihole_dns_2: "8.8.8.8"
+pihole_admin_password: "admin"
+
+# Declarative DNS Records -> ชี้ Ingress Gateway (CT 101: 192.168.1.22)
+pihole_custom_records:
+  - ip: "192.168.1.22"
+    domain: "agh.home"
+  - ip: "192.168.1.22"
+    domain: "pihole.home"
+  - ip: "192.168.1.22"
+    domain: "hass.home"
+  - ip: "192.168.1.22"
+    domain: "jellyfin.home"
