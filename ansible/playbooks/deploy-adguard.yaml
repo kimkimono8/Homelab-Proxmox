@@ -1,6 +1,6 @@
 ---
 - name: Deploy AdGuard Home DNS Server
-  hosts: dns_servers
+  hosts: adguard
   gather_facts: yes
   roles:
     - adguard
