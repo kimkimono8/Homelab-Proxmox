@@ -1,15 +1,17 @@
 locals {
   containers = {
-    adguard = {
-      vm_id       = 100
-      hostname    = "adguard"
-      description = "Core DNS & Central DHCP Server"
-      ip_address  = "192.168.1.21/24"
-      cores       = 1
-      memory      = 128
-      swap        = 128
-      disk_size   = 8
-      tags        = ["dns", "dhcp", "network", "iac"]
+    pihole = {
+      vm_id        = 100
+      hostname     = "pihole"
+      description  = "Pi-hole DNS & Ad-blocking Node"
+      ip_address   = "192.168.1.21/24"
+      cores        = 1
+      memory       = 128
+      swap         = 128
+      disk_size    = 4
+      unprivileged = true
+      keyctl       = false
+      tags         = ["dns", "network", "iac"]
     }
     nginx = {
       vm_id       = 101

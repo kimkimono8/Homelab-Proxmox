@@ -10,6 +10,10 @@ all:
       hosts:
         homeassistant:
           ansible_host: 192.168.1.24
+    media:
+      hosts:
+        jellyfin:
+          ansible_host: 192.168.1.25
   vars:
     ansible_user: root
     ansible_ssh_common_args: '-o StrictHostKeyChecking=accept-new'
