@@ -1,0 +1,4 @@
+# Managed by Ansible - Declarative Homelab DNS Records
+{% for record in pihole_custom_records %}
+{{ record.ip }} {{ record.domain }}
+{% endfor %}
