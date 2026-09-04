@@ -1,0 +1,6 @@
+---
+- name: Deploy and Configure Home Assistant
+  hosts: iot
+  become: true
+  roles:
+    - homeassistant

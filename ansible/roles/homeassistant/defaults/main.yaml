@@ -1,0 +1,6 @@
+---
+homeassistant_version: "2026.9.0"
+homeassistant_user: "homeassistant"
+homeassistant_base_dir: "/srv/homeassistant"
+homeassistant_venv_dir: "/srv/homeassistant/venv"
+homeassistant_config_dir: "/srv/homeassistant/.homeassistant"

@@ -1,0 +1,7 @@
+# Home Assistant Core Configuration (Managed by Ansible)
+default_config:
+
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 192.168.1.22  # NGINX Ingress Container IP

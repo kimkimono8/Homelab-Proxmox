@@ -1,0 +1,102 @@
+---
+- name: Install system build dependencies
+  ansible.builtin.apt:
+    name:
+      - curl
+      - git
+      - sudo
+      - build-essential
+      - libffi-dev
+      - libssl-dev
+      - libjpeg-dev
+      - zlib1g-dev
+      - autoconf
+      - libopenjp2-7
+      - libturbojpeg0-dev
+      - tzdata
+      - ffmpeg
+      - libpcap-dev
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Create homeassistant service user
+  ansible.builtin.user:
+    name: "{{ homeassistant_user }}"
+    system: yes
+    shell: /bin/bash
+    home: "{{ homeassistant_base_dir }}"
+    groups: dialout
+
+- name: Ensure base directory exists and owned by homeassistant user
+  ansible.builtin.file:
+    path: "{{ homeassistant_base_dir }}"
+    state: directory
+    owner: "{{ homeassistant_user }}"
+    group: "{{ homeassistant_user }}"
+    mode: '0755'
+
+- name: Ensure configuration directory exists
+  ansible.builtin.file:
+    path: "{{ homeassistant_config_dir }}"
+    state: directory
+    owner: "{{ homeassistant_user }}"
+    group: "{{ homeassistant_user }}"
+    mode: '0755'
+
+- name: Deploy Home Assistant reverse proxy config
+  ansible.builtin.template:
+    src: configuration.yaml.j2
+    dest: "{{ homeassistant_config_dir }}/configuration.yaml"
+    owner: "{{ homeassistant_user }}"
+    group: "{{ homeassistant_user }}"
+    mode: '0644'
+    force: no
+
+- name: Install uv binary
+  ansible.builtin.shell: |
+    curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh
+  args:
+    creates: /usr/local/bin/uv
+
+- name: Create Python 3.14 isolated venv and install Home Assistant Core
+  ansible.builtin.shell: |
+    uv venv --python 3.14 {{ homeassistant_venv_dir }}
+    uv pip install --python {{ homeassistant_venv_dir }}/bin/python wheel
+    uv pip install --python {{ homeassistant_venv_dir }}/bin/python "homeassistant=={{ homeassistant_version }}"
+  become: yes
+  become_user: "{{ homeassistant_user }}"
+  environment:
+    PATH: "/usr/local/bin:/usr/bin:/bin"
+  args:
+    creates: "{{ homeassistant_venv_dir }}/bin/hass"
+
+- name: Create Systemd service unit for Home Assistant Core
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/homeassistant.service
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      [Unit]
+      Description=Home Assistant Core (Pinned {{ homeassistant_version }})
+      After=network-online.target
+
+      [Service]
+      Type=simple
+      User={{ homeassistant_user }}
+      WorkingDirectory={{ homeassistant_config_dir }}
+      ExecStart={{ homeassistant_venv_dir }}/bin/hass -c {{ homeassistant_config_dir }}
+      RestartForceExitStatus=100
+      Restart=on-failure
+      RestartSec=5s
+
+      [Install]
+      WantedBy=multi-user.target
+
+- name: Enable and restart Home Assistant service
+  ansible.builtin.systemd:
+    name: homeassistant
+    daemon_reload: yes
+    enabled: yes
+    state: restarted
