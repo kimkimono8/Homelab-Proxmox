@@ -35,6 +35,19 @@ locals {
       keyctl       = false # ไม่ต้องใช้ keyctl
       tags         = ["automation", "iot", "iac"]
     }
+    jellyfin = {
+      vm_id        = 104
+      hostname     = "jellyfin"
+      description  = "Jellyfin Media Server"
+      ip_address   = "192.168.1.25/24"
+      cores        = 2
+      memory       = 1024
+      swap         = 512
+      disk_size    = 16
+      unprivileged = true
+      keyctl       = false
+      tags         = ["media", "streaming", "iac"]
+    }
   }
 }
 
