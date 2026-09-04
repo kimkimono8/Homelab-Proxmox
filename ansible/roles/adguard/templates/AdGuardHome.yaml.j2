@@ -1,0 +1,17 @@
+schema_version: 29
+dns:
+  bind_hosts:
+    - 0.0.0.0
+  port: {{ adguard_dns_port }}
+  upstream_dns:
+{% for dns in adguard_upstream_dns %}
+    - {{ dns }}
+{% endfor %}
+http:
+  address: 0.0.0.0:{{ adguard_web_port }}
+auth_attempts: 5
+block_auth_min: 15
+http_proxy: ""
+language: ""
+theme: auto
+debug_pprof: false

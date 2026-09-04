@@ -1,0 +1,7 @@
+---
+adguard_install_dir: "/opt/AdGuardHome"
+adguard_web_port: 8083
+adguard_dns_port: 53
+adguard_upstream_dns:
+  - "1.1.1.1"
+  - "8.8.8.8"

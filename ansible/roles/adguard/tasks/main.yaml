@@ -11,7 +11,7 @@
 
 - name: Create AdGuard Home installation directory
   ansible.builtin.file:
-    path: /opt/AdGuardHome
+    path: "{{ adguard_install_dir }}"
     state: directory
     mode: '0755'
 
@@ -20,14 +20,24 @@
     src: https://github.com/AdguardTeam/AdGuardHome/releases/latest/download/AdGuardHome_linux_amd64.tar.gz
     dest: /opt
     remote_src: yes
-    creates: /opt/AdGuardHome/AdGuardHome
+    creates: "{{ adguard_install_dir }}/AdGuardHome"
 
-- name: Register and install AdGuard Home as a Systemd service
+- name: Deploy AdGuard Home declarative configuration
+  ansible.builtin.template:
+    src: AdGuardHome.yaml.j2
+    dest: "{{ adguard_install_dir }}/AdGuardHome.yaml"
+    owner: root
+    group: root
+    mode: '0644'
+    force: no
+  notify: Restart AdGuardHome service
+
+- name: Register and install AdGuard Home systemd service
   ansible.builtin.command:
-    cmd: /opt/AdGuardHome/AdGuardHome -s install
+    cmd: "{{ adguard_install_dir }}/AdGuardHome -s install"
     creates: /etc/systemd/system/AdGuardHome.service
 
-- name: Ensure AdGuard Home service is enabled and running
+- name: Ensure AdGuard Home service is enabled and started
   ansible.builtin.systemd:
     name: AdGuardHome
     enabled: yes
