@@ -1,0 +1,6 @@
+---
+- name: Deploy Jellyfin Media Server on CT 104
+  hosts: media
+  gather_facts: yes
+  roles:
+    - jellyfin
