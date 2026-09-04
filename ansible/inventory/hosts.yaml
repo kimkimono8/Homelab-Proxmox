@@ -1,8 +1,12 @@
 all:
   children:
+    proxmox_nodes:
+      hosts:
+        pve:
+          ansible_host: 192.168.1.20
     core_network:
       hosts:
-        adguard:
+        pihole:
           ansible_host: 192.168.1.21
         nginx:
           ansible_host: 192.168.1.22
