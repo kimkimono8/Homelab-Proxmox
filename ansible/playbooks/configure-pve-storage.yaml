@@ -1,0 +1,30 @@
+---
+- name: Configure High-Performance External NTFS Storage on PVE Host
+  hosts: proxmox_nodes
+  vars:
+    ntfs_mounts:
+      - label: "Seagate-Backup-plus"
+        uuid: "4C08CBA008CB8802"
+        mount_path: "/mnt/storage1"
+      - label: "StoreJet"
+        uuid: "0415544C044CC292"
+        mount_path: "/mnt/storage2"
+
+  tasks:
+    - name: Ensure mount directories exist on PVE host
+      ansible.builtin.file:
+        path: "{{ item.mount_path }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0777'
+      loop: "{{ ntfs_mounts }}"
+
+    - name: Ensure NTFS drives are persistently mounted via /etc/fstab
+      ansible.posix.mount:
+        path: "{{ item.mount_path }}"
+        src: "UUID={{ item.uuid }}"
+        fstype: ntfs3
+        opts: "noatime,nodiratime,uid=0,gid=0,umask=000,iocharset=utf8,nofail,x-systemd.device-timeout=15s"
+        state: mounted
+      loop: "{{ ntfs_mounts }}"

@@ -50,6 +50,30 @@
     name: jellyfin
     state: present
 
+# ==========================================
+# Hardware Acceleration & GPU Permissions
+# ==========================================
+- name: Ensure render group exists with host matching GID
+  ansible.builtin.group:
+    name: render
+    gid: 993
+    state: present
+
+- name: Ensure video group exists with host matching GID
+  ansible.builtin.group:
+    name: video
+    gid: 44
+    state: present
+
+- name: Add jellyfin user to video and render groups for QSV access
+  ansible.builtin.user:
+    name: jellyfin
+    groups:
+      - video
+      - render
+    append: yes
+  notify: Restart jellyfin service
+
 - name: Ensure Jellyfin service is enabled and started
   ansible.builtin.systemd:
     name: jellyfin
