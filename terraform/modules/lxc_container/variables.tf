@@ -83,3 +83,14 @@ variable "tags" {
   description = "Resource tags"
   default     = ["iac", "terraform"]
 }
+variable "unprivileged" {
+  type        = bool
+  description = "Whether the container is unprivileged"
+  default     = true
+}
+
+variable "keyctl" {
+  type        = bool
+  description = "Enable keyctl feature"
+  default     = false
+}

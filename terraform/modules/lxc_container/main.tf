@@ -2,7 +2,7 @@ resource "proxmox_virtual_environment_container" "this" {
   description  = var.description
   node_name    = var.node_name
   vm_id        = var.vm_id
-  unprivileged = true
+  unprivileged = var.unprivileged
 
   initialization {
     hostname = var.hostname
@@ -49,6 +49,7 @@ resource "proxmox_virtual_environment_container" "this" {
 
   features {
     nesting = true
+    keyctl = var.keyctl
   }
 
   tags = var.tags

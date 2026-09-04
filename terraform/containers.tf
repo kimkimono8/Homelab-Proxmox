@@ -23,15 +23,17 @@ locals {
       tags        = ["ingress", "proxy", "network", "iac"]
     }
     homeassistant = {
-      vm_id       = 103
-      hostname    = "home-assistant"
-      description = "Home Assistant Core"
-      ip_address  = "192.168.1.24/24"
-      cores       = 2
-      memory      = 512
-      swap        = 512
-      disk_size   = 8
-      tags        = ["automation", "iot", "iac"]
+      vm_id        = 103
+      hostname     = "home-assistant"
+      description  = "Home Assistant Core (Python venv)"
+      ip_address   = "192.168.1.24/24"
+      cores        = 2
+      memory       = 512
+      swap         = 512
+      disk_size    = 8
+      unprivileged = true  # กลับมาใช้ Unprivileged มาตรฐาน
+      keyctl       = false # ไม่ต้องใช้ keyctl
+      tags         = ["automation", "iot", "iac"]
     }
   }
 }
@@ -50,4 +52,7 @@ module "containers" {
   disk_size      = each.value.disk_size
   tags           = each.value.tags
   ssh_public_key = var.ssh_public_key
+
+  unprivileged = lookup(each.value, "unprivileged", true)
+  keyctl       = lookup(each.value, "keyctl", false)
 }
