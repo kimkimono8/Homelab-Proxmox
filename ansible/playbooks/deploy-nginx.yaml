@@ -5,10 +5,20 @@
   vars:
     nginx_virtual_hosts:
       - domain: agh.home
-        upstream: http://192.168.1.21:8083
+        upstream: http://192.168.1.21:80
       - domain: hass.home
         upstream: http://192.168.1.24:8123
       - domain: jellyfin.home
         upstream: http://192.168.1.25:8096
+      - domain: deluge.home
+        upstream: http://192.168.1.26:8112
+      - domain: prowlarr.home
+        upstream: http://192.168.1.27:9696
+      - domain: radarr.home
+        upstream: http://192.168.1.27:7878
+      - domain: sonarr.home
+        upstream: http://192.168.1.27:8989
+      - domain: flaresolverr.home
+        upstream: http://192.168.1.27:8191
   roles:
     - nginx

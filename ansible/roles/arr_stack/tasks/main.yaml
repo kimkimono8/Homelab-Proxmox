@@ -1,0 +1,155 @@
+---
+- name: Install dependencies and runtime packages
+  ansible.builtin.apt:
+    name:
+      - curl
+      - sqlite3
+      - libchromaprint-tools
+      - mediainfo
+      - python3
+      - python3-pip
+      - python3-venv
+      - chromium
+      - chromium-driver
+      - xvfb
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Ensure arr service user exists
+  ansible.builtin.user:
+    name: media
+    system: yes
+    shell: /bin/false
+    home: /var/lib/media
+    create_home: yes
+
+- name: Ensure application data directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: media
+    group: media
+    mode: '0775'
+  loop:
+    - /var/lib/prowlarr
+    - /var/lib/radarr
+    - /var/lib/sonarr
+    - /opt/flaresolverr
+
+# ----------------------------------------------------------------------
+# 1. FlareSolverr (Bypass Cloudflare via Native Python venv + Chromium)
+# ----------------------------------------------------------------------
+- name: Download FlareSolverr source release
+  ansible.builtin.unarchive:
+    src: https://github.com/FlareSolverr/FlareSolverr/archive/refs/tags/v3.3.21.tar.gz
+    dest: /opt/flaresolverr
+    remote_src: yes
+    extra_opts: ['--strip-components=1']
+    creates: /opt/flaresolverr/package.json
+
+- name: Create Python venv and install FlareSolverr dependencies
+  ansible.builtin.pip:
+    requirements: /opt/flaresolverr/requirements.txt
+    virtualenv: /opt/flaresolverr/venv
+    virtualenv_command: /usr/bin/python3 -m venv
+
+- name: Deploy FlareSolverr systemd service
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/flaresolverr.service
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      [Unit]
+      Description=FlareSolverr Cloudflare Bypass Service
+      After=network.target
+
+      [Service]
+      Type=simple
+      User=media
+      Group=media
+      Environment=PORT=8191
+      Environment=HOST=0.0.0.0
+      Environment=HEADLESS=true
+      WorkingDirectory=/opt/flaresolverr
+      ExecStart=/opt/flaresolverr/venv/bin/python3 /opt/flaresolverr/src/flaresolverr.py
+      Restart=on-failure
+
+      [Install]
+      WantedBy=multi-user.target
+  notify: Restart arr services
+
+# ----------------------------------------------------------------------
+# 2. Prowlarr, Radarr, Sonarr (Native .NET Binaries)
+# ----------------------------------------------------------------------
+- name: Download and install Prowlarr
+  ansible.builtin.unarchive:
+    src: "https://prowlarr.servarr.com/v1/update/master/updatefile?os=linux&runtime=netcore&arch=x64"
+    dest: /opt
+    remote_src: yes
+    creates: /opt/Prowlarr/Prowlarr
+
+- name: Download and install Radarr
+  ansible.builtin.unarchive:
+    src: "https://radarr.servarr.com/v1/update/master/updatefile?os=linux&runtime=netcore&arch=x64"
+    dest: /opt
+    remote_src: yes
+    creates: /opt/Radarr/Radarr
+
+- name: Download and install Sonarr
+  ansible.builtin.unarchive:
+    src: "https://services.sonarr.tv/v1/download/main/latest?version=4&os=linux&arch=x64"
+    dest: /opt
+    remote_src: yes
+    creates: /opt/Sonarr/Sonarr
+
+- name: Ensure correct ownership on /opt application folders
+  ansible.builtin.file:
+    path: "{{ item }}"
+    owner: media
+    group: media
+    recurse: yes
+  loop:
+    - /opt/Prowlarr
+    - /opt/Radarr
+    - /opt/Sonarr
+    - /opt/flaresolverr
+
+- name: Deploy Systemd services for Arr apps
+  ansible.builtin.copy:
+    dest: "/etc/systemd/system/{{ item.name }}.service"
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      [Unit]
+      Description={{ item.desc }}
+      After=network.target
+
+      [Service]
+      User=media
+      Group=media
+      Type=simple
+      ExecStart={{ item.bin }} -nobrowser -data={{ item.data }}
+      Restart=on-failure
+
+      [Install]
+      WantedBy=multi-user.target
+  loop:
+    - { name: 'prowlarr', desc: 'Prowlarr Indexer Manager', bin: '/opt/Prowlarr/Prowlarr', data: '/var/lib/prowlarr' }
+    - { name: 'radarr', desc: 'Radarr Movie Manager', bin: '/opt/Radarr/Radarr', data: '/var/lib/radarr' }
+    - { name: 'sonarr', desc: 'Sonarr TV Series Manager', bin: '/opt/Sonarr/Sonarr', data: '/var/lib/sonarr' }
+  notify: Restart arr services
+
+- name: Ensure all media acquisition services are running
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    daemon_reload: yes
+    enabled: yes
+    state: started
+  loop:
+    - flaresolverr
+    - prowlarr
+    - radarr
+    - sonarr

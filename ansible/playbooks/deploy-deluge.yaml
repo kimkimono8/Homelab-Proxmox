@@ -1,0 +1,33 @@
+---
+# ==========================================
+# STEP 1: CONFIGURE BIND MOUNT ON PROXMOX HOST
+# ==========================================
+- name: Configure Storage Bind Mount for Deluge on PVE Host
+  hosts: proxmox_nodes
+  tasks:
+    - name: Ensure download directory exists on host storage
+      ansible.builtin.file:
+        path: /mnt/storage1/downloads
+        state: directory
+        mode: '0777'
+
+    - name: Add persistent bind mount to CT 105 config
+      ansible.builtin.lineinfile:
+        path: /etc/pve/lxc/105.conf
+        line: 'mp0: /mnt/storage1/downloads,mp=/downloads'
+        state: present
+      register: pve_ct105_mount
+
+    - name: Reboot CT 105 to apply mount points if changed
+      ansible.builtin.command:
+        cmd: pct reboot 105
+      when: pve_ct105_mount.changed
+
+# ==========================================
+# STEP 2: DEPLOY DELUGE SERVICE
+# ==========================================
+- name: Deploy Deluge Torrent Client on CT 105
+  hosts: deluge
+  gather_facts: yes
+  roles:
+    - deluge
