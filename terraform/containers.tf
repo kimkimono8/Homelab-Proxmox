@@ -50,6 +50,19 @@ locals {
       keyctl       = false
       tags         = ["media", "streaming", "iac"]
     }
+    deluge = {
+      vm_id        = 105
+      hostname     = "deluge"
+      description  = "Deluge BitTorrent Daemon"
+      ip_address   = "192.168.1.26/24"
+      cores        = 1
+      memory       = 256
+      swap         = 256
+      disk_size    = 8
+      unprivileged = true
+      keyctl       = false
+      tags         = ["media", "downloader", "torrent", "iac"]
+    }
   }
 }
 

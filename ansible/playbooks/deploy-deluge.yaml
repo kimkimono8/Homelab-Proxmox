@@ -1,0 +1,6 @@
+---
+- name: Deploy Deluge Torrent Client on CT 105
+  hosts: deluge
+  gather_facts: yes
+  roles:
+    - deluge

@@ -16,3 +16,5 @@ pihole_custom_records:
     domain: "hass.home"
   - ip: "192.168.1.22"
     domain: "jellyfin.home"
+  - ip: "192.168.1.22"
+    domain: "deluge.home"

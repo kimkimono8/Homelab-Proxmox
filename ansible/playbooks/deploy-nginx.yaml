@@ -10,5 +10,7 @@
         upstream: http://192.168.1.24:8123
       - domain: jellyfin.home
         upstream: http://192.168.1.25:8096
+      - domain: deluge.home
+        upstream: http://192.168.1.26:8112
   roles:
     - nginx
