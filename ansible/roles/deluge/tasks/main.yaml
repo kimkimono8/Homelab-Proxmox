@@ -1,0 +1,74 @@
+---
+- name: Install Deluge daemon and web interface packages
+  ansible.builtin.apt:
+    name:
+      - deluged
+      - deluge-web
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Ensure deluge service user exists
+  ansible.builtin.user:
+    name: deluge
+    system: yes
+    home: /var/lib/deluge
+    shell: /bin/false
+    create_home: yes
+
+- name: Create systemd service for deluged
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/deluged.service
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      [Unit]
+      Description=Deluge Bittorrent Client Daemon
+      After=network-online.target
+
+      [Service]
+      Type=simple
+      User=deluge
+      Group=deluge
+      UMask=000
+      ExecStart=/usr/bin/deluged -d
+      Restart=on-failure
+
+      [Install]
+      WantedBy=multi-user.target
+  notify: Restart deluge services
+
+- name: Create systemd service for deluge-web
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/deluge-web.service
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      [Unit]
+      Description=Deluge Bittorrent Client Web Interface
+      After=network-online.target deluged.service
+      Wants=deluged.service
+
+      [Service]
+      Type=simple
+      User=deluge
+      Group=deluge
+      UMask=000
+      ExecStart=/usr/bin/deluge-web -d -p 8112
+      Restart=on-failure
+
+      [Install]
+      WantedBy=multi-user.target
+  notify: Restart deluge services
+
+- name: Ensure deluge services are enabled and started
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    daemon_reload: yes
+    enabled: yes
+    state: started
+  loop:
+    - deluged
+    - deluge-web

@@ -50,6 +50,32 @@ locals {
       keyctl       = false
       tags         = ["media", "streaming", "iac"]
     }
+    deluge = {
+      vm_id        = 105
+      hostname     = "deluge"
+      description  = "Deluge BitTorrent Daemon"
+      ip_address   = "192.168.1.26/24"
+      cores        = 1
+      memory       = 256
+      swap         = 256
+      disk_size    = 8
+      unprivileged = true
+      keyctl       = false
+      tags         = ["media", "downloader", "torrent", "iac"]
+    }
+    arr_stack = {
+      vm_id        = 106
+      hostname     = "arr-stack"
+      description  = "Media Automation Stack (Prowlarr, Radarr, Sonarr, FlareSolverr)"
+      ip_address   = "192.168.1.27/24"
+      cores        = 2
+      memory       = 1024
+      swap         = 512
+      disk_size    = 10
+      unprivileged = true
+      keyctl       = false
+      tags         = ["media", "automation", "arr", "flaresolverr", "iac"]
+    }
   }
 }
 

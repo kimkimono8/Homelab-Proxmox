@@ -1,0 +1,6 @@
+---
+- name: Deploy Arr Stack and FlareSolverr on CT 106
+  hosts: arr_stack
+  gather_facts: yes
+  roles:
+    - arr_stack
