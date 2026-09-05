@@ -1,5 +1,5 @@
 ---
-- name: Configure High-Performance External NTFS Storage on PVE Host
+- name: Configure High-Performance External NTFS Storage and LXC Bind Mounts
   hosts: proxmox_nodes
   vars:
     ntfs_mounts:
@@ -11,6 +11,7 @@
         mount_path: "/mnt/storage2"
 
   tasks:
+    # 1. PVE Host Mounts (fstab)
     - name: Ensure mount directories exist on PVE host
       ansible.builtin.file:
         path: "{{ item.mount_path }}"
@@ -28,3 +29,45 @@
         opts: "noatime,nodiratime,uid=0,gid=0,umask=000,iocharset=utf8,nofail,x-systemd.device-timeout=15s"
         state: mounted
       loop: "{{ ntfs_mounts }}"
+
+    # 2. CT 104 (Jellyfin) Bind Mounts
+    - name: Configure bind mounts for Jellyfin (CT 104)
+      ansible.builtin.blockinfile:
+        path: /etc/pve/lxc/104.conf
+        marker: "# {mark} ANSIBLE MANAGED JELLYFIN STORAGE"
+        block: |
+          mp0: /mnt/storage1,mp=/storage1
+          mp1: /mnt/storage2,mp=/storage2
+      register: mount_104
+
+    - name: Reboot CT 104 if mounts changed
+      ansible.builtin.command: pct reboot 104
+      when: mount_104.changed
+
+    # 3. CT 105 (Deluge) Bind Mounts
+    - name: Configure bind mounts for Deluge (CT 105)
+      ansible.builtin.blockinfile:
+        path: /etc/pve/lxc/105.conf
+        marker: "# {mark} ANSIBLE MANAGED DELUGE STORAGE"
+        block: |
+          mp0: /mnt/storage1,mp=/storage1
+          mp1: /mnt/storage2,mp=/storage2
+      register: mount_105
+
+    - name: Reboot CT 105 if mounts changed
+      ansible.builtin.command: pct reboot 105
+      when: mount_105.changed
+
+    # 4. CT 106 (Arr-Stack) Bind Mounts
+    - name: Configure bind mounts for Arr-Stack (CT 106)
+      ansible.builtin.blockinfile:
+        path: /etc/pve/lxc/106.conf
+        marker: "# {mark} ANSIBLE MANAGED ARR STORAGE"
+        block: |
+          mp0: /mnt/storage1,mp=/storage1
+          mp1: /mnt/storage2,mp=/storage2
+      register: mount_106
+
+    - name: Reboot CT 106 if mounts changed
+      ansible.builtin.command: pct reboot 106
+      when: mount_106.changed
