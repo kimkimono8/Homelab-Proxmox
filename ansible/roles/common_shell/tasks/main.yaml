@@ -1,0 +1,51 @@
+---
+- name: Install modern CLI packages on Arch Linux
+  community.general.pacman:
+    name:
+      - zsh
+      - starship
+      - fzf
+      - lsd
+      - bat
+      - git
+      - curl
+    state: present
+  become: true
+  when: ansible_facts['os_family'] == "Archlinux"
+
+- name: Install baseline CLI packages on Debian/Ubuntu
+  ansible.builtin.apt:
+    name:
+      - zsh
+      - git
+      - curl
+      - fzf
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+  become: true
+  when: ansible_facts['os_family'] == "Debian"
+
+- name: Ensure .config directory exists
+  ansible.builtin.file:
+    path: "{{ ansible_facts['user_dir'] }}/.config"
+    state: directory
+    mode: '0755'
+
+- name: Deploy starship configuration
+  ansible.builtin.copy:
+    src: starship.toml
+    dest: "{{ ansible_facts['user_dir'] }}/.config/starship.toml"
+    mode: '0644'
+
+- name: Deploy standardized .zshrc
+  ansible.builtin.copy:
+    src: zshrc
+    dest: "{{ ansible_facts['user_dir'] }}/.zshrc"
+    mode: '0644'
+
+- name: Ensure default shell is set to zsh
+  ansible.builtin.user:
+    name: "{{ ansible_facts['user_id'] }}"
+    shell: /bin/zsh
+  become: true

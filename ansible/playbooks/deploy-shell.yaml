@@ -1,0 +1,24 @@
+---
+# ==========================================
+# STEP 1: BOOTSTRAP SUDO & NOPASSWD ON ARCH
+# ==========================================
+- name: Bootstrap passwordless sudo for adminx on Arch-server
+  hosts: proxmox_nodes
+  tasks:
+    - name: Ensure sudo package and wheel NOPASSWD privileges exist in CT 102
+      ansible.builtin.command:
+        cmd: >
+          pct exec 102 -- bash -c
+          "pacman -S --needed --noconfirm sudo &&
+          echo '%wheel ALL=(ALL:ALL) NOPASSWD: ALL' > /etc/sudoers.d/10-wheel &&
+          chmod 0440 /etc/sudoers.d/10-wheel"
+      changed_when: false
+
+# ==========================================
+# STEP 2: DEPLOY SHELL & CLI ENVIRONMENT
+# ==========================================
+- name: Deploy Standardized Developer Shell Environment
+  hosts: all:localhost
+  connection: smart
+  roles:
+    - common_shell

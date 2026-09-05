@@ -1,0 +1,45 @@
+# --- History Configuration ---
+HISTFILE=~/.zsh_history
+HISTSIZE=10000
+SAVEHIST=10000
+setopt SHARE_HISTORY HIST_IGNORE_DUPS
+
+# --- Directory Navigation ---
+setopt AUTO_CD AUTO_PUSHD PUSHD_IGNORE_DUPS
+
+# --- Modern Utility Aliases (Fallback to standard if missing) ---
+if command -v lsd >/dev/null 2>&1; then
+  alias ls="lsd --icons --group-directories-first"
+  alias ll="lsd -la --icons --group-directories-first"
+  alias lt="lsd --tree --level=2 --icons"
+else
+  alias ll="ls -lah --color=auto"
+fi
+
+if command -v bat >/dev/null 2>&1; then
+  alias cat="bat --paging=never --style=plain"
+fi
+
+# --- GitOps Shortcuts ---
+alias gs="git status -sb"
+alias gl="git log --oneline --graph --decorate -n 10"
+alias gd="git diff"
+alias gp="git push"
+
+# --- Terraform & OpenTofu ---
+alias tf="terraform"
+alias tfa="terraform apply -auto-approve"
+alias tfp="terraform plan"
+alias tfv="terraform validate"
+
+# --- Ansible Homelab Automation ---
+export ANSIBLE_INVENTORY=~/projects/Homelab-Proxmox/ansible/inventory/hosts.yaml
+alias ap="ansible-playbook -i $ANSIBLE_INVENTORY"
+alias apc="ansible-playbook -i $ANSIBLE_INVENTORY --syntax-check"
+alias aping="ansible all -i $ANSIBLE_INVENTORY -m ping"
+alias pve-ssh="ssh root@192.168.1.20"
+
+# --- Starship Prompt Initialization ---
+if command -v starship >/dev/null 2>&1; then
+  eval "$(starship init zsh)"
+fi
