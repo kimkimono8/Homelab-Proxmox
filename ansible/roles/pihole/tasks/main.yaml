@@ -1,24 +1,4 @@
 ---
-- name: Stop and disable legacy AdGuard Home service if present
-  ansible.builtin.systemd:
-    name: AdGuardHome
-    state: stopped
-    enabled: no
-  failed_when: false
-
-- name: Install prerequisite packages
-  ansible.builtin.apt:
-    name:
-      - curl
-      - git
-      - lighttpd
-      - php-cgi
-      - php-sqlite3
-      - dnsutils
-    state: present
-    update_cache: yes
-    cache_valid_time: 3600
-
 - name: Ensure /etc/pihole directory exists
   ansible.builtin.file:
     path: /etc/pihole
@@ -26,40 +6,6 @@
     owner: root
     group: root
     mode: '0755'
-
-- name: Seed setupVars.conf for unattended automated installation
-  ansible.builtin.template:
-    src: setupVars.conf.j2
-    dest: /etc/pihole/setupVars.conf
-    owner: root
-    group: root
-    mode: '0644'
-
-- name: Download Pi-hole official automated installer
-  ansible.builtin.get_url:
-    url: https://install.pi-hole.net
-    dest: /tmp/basic-install.sh
-    mode: '0755'
-
-- name: Ensure upstream DNS is working before install
-  ansible.builtin.copy:
-    content: "nameserver 1.1.1.1\nnameserver 8.8.8.8\n"
-    dest: /etc/resolv.conf
-    mode: '0644'
-
-- name: Execute Pi-hole unattended installation
-  ansible.builtin.shell:
-    cmd: bash /tmp/basic-install.sh --unattended </dev/null
-  environment:
-    DEBIAN_FRONTEND: noninteractive
-    USER: root
-  args:
-    creates: /usr/local/bin/pihole
-
-- name: Set Pi-hole Web Admin password
-  ansible.builtin.command:
-    cmd: "pihole -a -p {{ pihole_admin_password }}"
-  changed_when: false
 
 - name: Deploy declarative local DNS records into /etc/hosts
   ansible.builtin.blockinfile:
@@ -71,16 +17,14 @@
       {% endfor %}
   notify: Reload pihole dns
 
-- name: Disable internal NTP client in Pi-hole v6 to prevent unprivileged capability error
+- name: Disable NTP server and sync client in Pi-hole v6 (Unprivileged LXC guard)
   ansible.builtin.command:
-    cmd: pihole-FTL --config ntp.ipv4.active false
+    cmd: "pihole-FTL --config {{ item }} false"
+  loop:
+    - ntp.ipv4.active
+    - ntp.ipv6.active
+    - ntp.sync.active
   changed_when: false
-
-- name: Ensure pihole-FTL service is running and enabled
-  ansible.builtin.systemd:
-    name: pihole-FTL
-    state: restarted
-    enabled: yes
 
 - name: Ensure pihole-FTL service is running and enabled
   ansible.builtin.systemd:
