@@ -1,0 +1,16 @@
+---
+- name: Enable TUN Device on Proxmox Host for CT 108
+  hosts: proxmox_nodes
+  tasks:
+    - name: Inject TUN pass-through config to /etc/pve/lxc/108.conf
+      ansible.builtin.blockinfile:
+        path: /etc/pve/lxc/108.conf
+        marker: "# {mark} ANSIBLE MANAGED TAILSCALE TUN DEVICE"
+        block: |
+          lxc.cgroup2.devices.allow: c 10:200 rwm
+          lxc.mount.entry: /dev/net/tun dev/net/tun none bind,create=file
+      register: tun_config
+
+    - name: Restart CT 108 to apply TUN device
+      ansible.builtin.command: pct reboot 108
+      when: tun_config.changed
