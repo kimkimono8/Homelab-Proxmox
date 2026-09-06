@@ -1,5 +1,5 @@
 ---
-- name: Configure High-Performance External NTFS Storage and LXC Bind Mounts
+- name: Configure Storage Mounts and Container Bind Definitions on PVE Host
   hosts: proxmox_nodes
   vars:
     ntfs_mounts:
@@ -10,9 +10,17 @@
         uuid: "0415544C044CC292"
         mount_path: "/mnt/storage2"
 
+    synology_nfs_mounts:
+      - share: "192.168.1.30:/volume1/nas"
+        mount_path: "/mnt/synology/nas"
+      - share: "192.168.1.30:/volumeUSB1/usbshare"
+        mount_path: "/mnt/synology/usb1"
+      - share: "192.168.1.30:/volumeUSB2/usbshare"
+        mount_path: "/mnt/synology/usb2"
+
   tasks:
-    # 1. PVE Host Mounts (fstab)
-    - name: Ensure mount directories exist on PVE host
+    # 1. PVE HOST LOCAL NTFS DRIVES
+    - name: Ensure NTFS mount directories exist on PVE host
       ansible.builtin.file:
         path: "{{ item.mount_path }}"
         state: directory
@@ -30,7 +38,47 @@
         state: mounted
       loop: "{{ ntfs_mounts }}"
 
-    # 2. CT 104 (Jellyfin) Bind Mounts
+    # 2. PVE HOST SYNOLOGY NFS SHARES
+    - name: Ensure Synology mount directories exist on PVE host
+      ansible.builtin.file:
+        path: "{{ item.mount_path }}"
+        state: directory
+      loop: "{{ synology_nfs_mounts }}"
+
+    - name: Ensure Synology NFS shares are persistently mounted via /etc/fstab
+      ansible.posix.mount:
+        path: "{{ item.mount_path }}"
+        src: "{{ item.share }}"
+        fstype: nfs
+        opts: "_netdev,auto,nofail,nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2"
+        state: mounted
+      loop: "{{ synology_nfs_mounts }}"
+
+    # 3. CONTAINER BIND MOUNTS
+    # CT 102 (Arch-server)
+    - name: Clean legacy unmanaged mount lines for Arch-server
+      ansible.builtin.lineinfile:
+        path: /etc/pve/lxc/102.conf
+        regexp: '^(#\s*)?mp[2-4]:.*volume'
+        state: absent
+
+    - name: Configure bind mounts for Arch-server (CT 102)
+      ansible.builtin.blockinfile:
+        path: /etc/pve/lxc/102.conf
+        marker: "# {mark} ANSIBLE MANAGED ARCH STORAGE"
+        block: |
+          mp0: /mnt/storage1,mp=/storage1
+          mp1: /mnt/storage2,mp=/storage2
+          mp2: /mnt/synology/nas,mp=/mnt/synology/nas
+          mp3: /mnt/synology/usb1,mp=/mnt/synology/usb1
+          mp4: /mnt/synology/usb2,mp=/mnt/synology/usb2
+      register: mount_102
+
+    - name: Schedule safe delayed reboot for Arch-server (CT 102)
+      ansible.builtin.command: systemd-run --on-active=3s pct reboot 102
+      when: mount_102.changed
+
+    # CT 104 (Jellyfin)
     - name: Configure bind mounts for Jellyfin (CT 104)
       ansible.builtin.blockinfile:
         path: /etc/pve/lxc/104.conf
@@ -38,13 +86,16 @@
         block: |
           mp0: /mnt/storage1,mp=/storage1
           mp1: /mnt/storage2,mp=/storage2
+          mp2: /mnt/synology/nas,mp=/mnt/synology/nas
+          mp3: /mnt/synology/usb1,mp=/mnt/synology/usb1
+          mp4: /mnt/synology/usb2,mp=/mnt/synology/usb2
       register: mount_104
 
     - name: Reboot CT 104 if mounts changed
       ansible.builtin.command: pct reboot 104
       when: mount_104.changed
 
-    # 3. CT 105 (Deluge) Bind Mounts
+    # CT 105 (Deluge)
     - name: Configure bind mounts for Deluge (CT 105)
       ansible.builtin.blockinfile:
         path: /etc/pve/lxc/105.conf
@@ -52,13 +103,16 @@
         block: |
           mp0: /mnt/storage1,mp=/storage1
           mp1: /mnt/storage2,mp=/storage2
+          mp2: /mnt/synology/nas,mp=/mnt/synology/nas
+          mp3: /mnt/synology/usb1,mp=/mnt/synology/usb1
+          mp4: /mnt/synology/usb2,mp=/mnt/synology/usb2
       register: mount_105
 
     - name: Reboot CT 105 if mounts changed
       ansible.builtin.command: pct reboot 105
       when: mount_105.changed
 
-    # 4. CT 106 (Arr-Stack) Bind Mounts
+    # CT 106 (Arr-Stack)
     - name: Configure bind mounts for Arr-Stack (CT 106)
       ansible.builtin.blockinfile:
         path: /etc/pve/lxc/106.conf
@@ -66,6 +120,9 @@
         block: |
           mp0: /mnt/storage1,mp=/storage1
           mp1: /mnt/storage2,mp=/storage2
+          mp2: /mnt/synology/nas,mp=/mnt/synology/nas
+          mp3: /mnt/synology/usb1,mp=/mnt/synology/usb1
+          mp4: /mnt/synology/usb2,mp=/mnt/synology/usb2
       register: mount_106
 
     - name: Reboot CT 106 if mounts changed
