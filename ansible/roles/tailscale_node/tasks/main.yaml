@@ -1,5 +1,5 @@
 ---
-- name: Enable IPv4 and IPv6 forwarding for routing
+- name: Enable IPv4 and IPv6 forwarding
   ansible.posix.sysctl:
     name: "{{ item.key }}"
     value: "{{ item.value }}"
@@ -10,13 +10,13 @@
     - { key: 'net.ipv4.ip_forward', value: '1' }
     - { key: 'net.ipv6.conf.all.forwarding', value: '1' }
 
-- name: Install Tailscale signing key
+- name: Install Tailscale repository signing key
   ansible.builtin.get_url:
     url: https://pkgs.tailscale.com/stable/debian/bookworm.noarmor.gpg
     dest: /usr/share/keyrings/tailscale-archive-keyring.gpg
     mode: '0644'
 
-- name: Add Tailscale APT repository
+- name: Add Tailscale official APT repository
   ansible.builtin.apt_repository:
     repo: "deb [signed-by=/usr/share/keyrings/tailscale-archive-keyring.gpg] https://pkgs.tailscale.com/stable/debian bookworm main"
     state: present
@@ -27,9 +27,16 @@
     name: tailscale
     state: present
     update_cache: yes
+    cache_valid_time: 3600
 
 - name: Ensure tailscaled is started and enabled
   ansible.builtin.systemd:
     name: tailscaled
     enabled: yes
     state: started
+
+- name: Authenticate and bring up Tailscale (if auth key provided)
+  ansible.builtin.command:
+    cmd: "tailscale up --authkey={{ tailscale_auth_key }} {{ tailscale_args }}"
+  when: tailscale_auth_key | length > 0
+  changed_when: false
