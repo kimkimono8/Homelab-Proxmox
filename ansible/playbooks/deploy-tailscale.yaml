@@ -1,0 +1,9 @@
+---
+- name: Configure PVE Host for TUN passthrough
+  import_playbook: configure-tailscale-lxc.yaml
+
+- name: Deploy Tailscale Subnet Router & Exit Node inside CT 108
+  hosts: tailscale
+  become: true
+  roles:
+    - tailscale_node
