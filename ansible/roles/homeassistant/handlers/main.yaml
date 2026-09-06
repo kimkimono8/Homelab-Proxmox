@@ -1,0 +1,5 @@
+---
+- name: Restart homeassistant
+  ansible.builtin.systemd:
+    name: homeassistant
+    state: restarted

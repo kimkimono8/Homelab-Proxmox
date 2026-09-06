@@ -51,7 +51,8 @@
     owner: "{{ homeassistant_user }}"
     group: "{{ homeassistant_user }}"
     mode: '0644'
-    force: no
+    force: yes
+  notify: Restart homeassistant
 
 - name: Install uv binary
   ansible.builtin.shell: |
@@ -59,7 +60,7 @@
   args:
     creates: /usr/local/bin/uv
 
-- name: Create Python 3.14 isolated venv and install Home Assistant Core
+- name: Create Python isolated venv and install Home Assistant Core
   ansible.builtin.shell: |
     uv venv --python 3.14 {{ homeassistant_venv_dir }}
     uv pip install --python {{ homeassistant_venv_dir }}/bin/python wheel
@@ -99,4 +100,4 @@
     name: homeassistant
     daemon_reload: yes
     enabled: yes
-    state: restarted
+    state: started

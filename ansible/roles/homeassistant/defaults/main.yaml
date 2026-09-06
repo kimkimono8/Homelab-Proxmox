@@ -4,3 +4,7 @@ homeassistant_user: "homeassistant"
 homeassistant_base_dir: "/srv/homeassistant"
 homeassistant_venv_dir: "/srv/homeassistant/venv"
 homeassistant_config_dir: "/srv/homeassistant/.homeassistant"
+
+# Reverse Proxy Trust Settings
+homeassistant_trusted_proxies:
+- 192.168.1.22  # NGINX Ingress Gateway
