@@ -1,0 +1,43 @@
+---
+- name: Install Samba and Avahi via Pacman
+  community.general.pacman:
+    name:
+      - samba
+      - avahi
+      - nss-mdns
+    state: present
+  become: true
+
+- name: Deploy declarative smb.conf template
+  ansible.builtin.template:
+    src: smb.conf.j2
+    dest: /etc/samba/smb.conf
+    owner: root
+    group: root
+    mode: '0644'
+  become: true
+  notify: Restart Samba and Avahi
+
+- name: Enable and start Avahi mDNS daemon
+  ansible.builtin.systemd:
+    name: avahi-daemon
+    enabled: yes
+    state: started
+  become: true
+
+- name: Enable and start Samba smb service
+  ansible.builtin.systemd:
+    name: smb
+    enabled: yes
+    state: started
+  become: true
+
+- name: Set Samba password for user interactively (no plaintext saved)
+  ansible.builtin.shell: |
+    set -o pipefail
+    (echo "{{ samba_password }}"; echo "{{ samba_password }}") | smbpasswd -s -a {{ samba_user }}
+  args:
+    executable: /bin/bash
+  become: true
+  no_log: true
+  changed_when: false

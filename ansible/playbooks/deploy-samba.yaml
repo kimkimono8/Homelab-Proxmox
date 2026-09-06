@@ -1,0 +1,13 @@
+---
+- name: Deploy Declarative Samba Server on Arch-Server
+  hosts: localhost
+  connection: local
+  vars_prompt:
+    - name: samba_password
+      prompt: "Enter desired SMB password for adminx (for iPhone/iPad)"
+      private: yes
+      confirm: yes
+  vars:
+    samba_user: adminx
+  roles:
+    - samba_server

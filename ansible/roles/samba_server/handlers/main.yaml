@@ -1,0 +1,9 @@
+---
+- name: Restart Samba and Avahi
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: restarted
+  become: true
+  loop:
+    - smb
+    - avahi-daemon
