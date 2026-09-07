@@ -94,3 +94,9 @@ variable "keyctl" {
   description = "Enable keyctl feature"
   default     = false
 }
+variable "password" {
+  type        = string
+  description = "Root password for the container"
+  default     = null
+  sensitive   = true
+}

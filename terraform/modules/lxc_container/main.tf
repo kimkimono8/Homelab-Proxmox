@@ -15,7 +15,8 @@ resource "proxmox_virtual_environment_container" "this" {
     }
 
     user_account {
-      keys = [trimspace(var.ssh_public_key)]
+      keys     = [trimspace(var.ssh_public_key)]
+      password = var.password
     }
 
     dns {
@@ -49,8 +50,14 @@ resource "proxmox_virtual_environment_container" "this" {
 
   features {
     nesting = true
-    keyctl = var.keyctl
+    keyctl  = var.keyctl
   }
 
   tags = var.tags
+  lifecycle {
+    ignore_changes = [
+      mount_point,
+      description,
+    ]
+  }
 }
