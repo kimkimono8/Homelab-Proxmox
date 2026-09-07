@@ -1,6 +1,10 @@
 ---
+# 1. ตรวจสอบและบังคับผูก Storage Bind Mounts ที่ Host PVE ก่อนเสมอ
+- name: Ensure Host Storage and Bind Mounts are Active
+  import_playbook: configure-pve-storage.yaml
+
+# 2. ดำเนินการ Deploy และตั้งค่า Jellyfin Service ภายใน CT 104
 - name: Deploy Jellyfin Media Server on CT 104
-  hosts: media
-  gather_facts: yes
+  hosts: jellyfin
   roles:
     - jellyfin

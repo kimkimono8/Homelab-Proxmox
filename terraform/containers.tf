@@ -36,13 +36,15 @@ locals {
       unprivileged = true  # กลับมาใช้ Unprivileged มาตรฐาน
       keyctl       = false # ไม่ต้องใช้ keyctl
       tags         = ["automation", "iot", "iac"]
+      password     = var.lxc_default_password
+
     }
     jellyfin = {
       vm_id        = 104
       hostname     = "jellyfin"
       description  = "Jellyfin Media Server"
       ip_address   = "192.168.1.25/24"
-      cores        = 2
+      cores        = 8 # รักษาคอร์ประมวลผลสูงสุด
       memory       = 1024
       swap         = 512
       disk_size    = 16

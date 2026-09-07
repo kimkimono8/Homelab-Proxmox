@@ -14,3 +14,8 @@ variable "ssh_public_key" {
   type        = string
   description = "Public SSH Key to inject into containers"
 }
+variable "lxc_default_password" {
+  type        = string
+  description = "Default root password for LXC containers"
+  sensitive   = true
+}
