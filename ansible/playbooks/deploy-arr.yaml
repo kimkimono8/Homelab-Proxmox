@@ -1,6 +1,8 @@
 ---
+- name: Ensure Host Storage and Bind Mounts are Active
+  import_playbook: configure-pve-storage.yaml
+
 - name: Deploy Arr Stack and FlareSolverr on CT 106
   hosts: arr_stack
-  gather_facts: yes
   roles:
     - arr_stack
