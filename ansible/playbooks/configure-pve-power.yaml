@@ -1,0 +1,54 @@
+---
+- name: Configure Proxmox Host Power Management and Thermal Controls
+  hosts: pve
+  tasks:
+    - name: Install thermal daemon and monitoring packages
+      ansible.builtin.apt:
+        name:
+          - thermald
+          - lm-sensors
+        state: present
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Create persistent CPU governor systemd service
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/cpu-governor.service
+        content: |
+          [Unit]
+          Description=Set CPU Governor to Powersave
+          After=sysinit.target local-fs.target
+          DefaultDependencies=no
+
+          [Service]
+          Type=oneshot
+          ExecStart=/bin/sh -c 'echo powersave | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor'
+          RemainAfterExit=yes
+
+          [Install]
+          WantedBy=multi-user.target
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Reload systemd and restart cpu-governor
+
+    - name: Ensure cpu-governor and thermald services are enabled and started
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        enabled: yes
+        state: started
+      loop:
+        - cpu-governor
+        - thermald
+
+    - name: Apply powersave governor immediately across all CPU cores
+      ansible.builtin.shell: |
+        echo "powersave" | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+      changed_when: false
+
+  handlers:
+    - name: Reload systemd and restart cpu-governor
+      ansible.builtin.systemd:
+        name: cpu-governor
+        daemon_reload: yes
+        state: restarted
