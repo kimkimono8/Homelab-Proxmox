@@ -91,6 +91,19 @@ locals {
       keyctl       = false
       tags         = ["network", "vpn", "tailscale", "iac"]
     }
+    hermes_agent = {
+      vm_id        = 107
+      hostname     = "hermes-agent"
+      description  = "Hermes AI Autonomous CLI Runtime"
+      ip_address   = "192.168.1.31/24"
+      cores        = 1
+      memory       = 512
+      swap         = 512
+      disk_size    = 8
+      unprivileged = true
+      keyctl       = false
+      tags         = ["ai", "agent", "cli", "iac"]
+    }
   }
 }
 
