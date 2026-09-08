@@ -18,8 +18,20 @@
       - share: "192.168.1.30:/volumeUSB2/usbshare"
         mount_path: "/mnt/synology/usb2"
 
+    storage_containers:
+      - id: 102
+        name: "Arch-server"
+      - id: 104
+        name: "Jellyfin"
+      - id: 105
+        name: "Deluge"
+      - id: 106
+        name: "Arr-Stack"
+
   tasks:
-    # 1. PVE HOST LOCAL NTFS DRIVES
+    # -------------------------------------------------------------
+    # 1. PVE HOST STORAGE TARGETS
+    # -------------------------------------------------------------
     - name: Ensure NTFS mount directories exist on PVE host
       ansible.builtin.file:
         path: "{{ item.mount_path }}"
@@ -38,7 +50,6 @@
         state: mounted
       loop: "{{ ntfs_mounts }}"
 
-    # 2. PVE HOST SYNOLOGY NFS SHARES
     - name: Ensure Synology mount directories exist on PVE host
       ansible.builtin.file:
         path: "{{ item.mount_path }}"
@@ -54,77 +65,31 @@
         state: mounted
       loop: "{{ synology_nfs_mounts }}"
 
-    # 3. CONTAINER BIND MOUNTS
-    # CT 102 (Arch-server)
-    - name: Clean legacy unmanaged mount lines for Arch-server
-      ansible.builtin.lineinfile:
-        path: /etc/pve/lxc/102.conf
-        regexp: '^(#\s*)?mp[2-4]:.*volume'
-        state: absent
-
-    - name: Configure bind mounts for Arch-server (CT 102)
+    # -------------------------------------------------------------
+    # 2. WRITE BIND MOUNTS
+    # -------------------------------------------------------------
+    - name: Configure bind mounts for all storage-enabled containers
       ansible.builtin.blockinfile:
-        path: /etc/pve/lxc/102.conf
-        marker: "# {mark} ANSIBLE MANAGED ARCH STORAGE"
+        path: "/etc/pve/lxc/{{ item.id }}.conf"
+        marker: "# {mark} ANSIBLE MANAGED STORAGE ({{ item.name }})"
         block: |
           mp0: /mnt/storage1,mp=/storage1
           mp1: /mnt/storage2,mp=/storage2
           mp2: /mnt/synology/nas,mp=/mnt/synology/nas
           mp3: /mnt/synology/usb1,mp=/mnt/synology/usb1
           mp4: /mnt/synology/usb2,mp=/mnt/synology/usb2
-      register: mount_102
+      loop: "{{ storage_containers }}"
+      register: container_mounts
 
-    - name: Schedule safe delayed reboot for Arch-server (CT 102)
-      ansible.builtin.command: systemd-run --on-active=3s pct reboot 102
-      when: mount_102.changed
+    # -------------------------------------------------------------
+    # 3. REBOOT TARGETS ON CONFIG CHANGE
+    # -------------------------------------------------------------
+    - name: Reboot managed containers if storage config changed
+      ansible.builtin.command: "pct reboot {{ item.item.id }}"
+      loop: "{{ container_mounts.results }}"
+      when: item.changed and item.item.id != 102
 
-    # CT 104 (Jellyfin)
-    - name: Configure bind mounts for Jellyfin (CT 104)
-      ansible.builtin.blockinfile:
-        path: /etc/pve/lxc/104.conf
-        marker: "# {mark} ANSIBLE MANAGED JELLYFIN STORAGE"
-        block: |
-          mp0: /mnt/storage1,mp=/storage1
-          mp1: /mnt/storage2,mp=/storage2
-          mp2: /mnt/synology/nas,mp=/mnt/synology/nas
-          mp3: /mnt/synology/usb1,mp=/mnt/synology/usb1
-          mp4: /mnt/synology/usb2,mp=/mnt/synology/usb2
-      register: mount_104
-
-    - name: Reboot CT 104 if mounts changed
-      ansible.builtin.command: pct reboot 104
-      when: mount_104.changed
-
-    # CT 105 (Deluge)
-    - name: Configure bind mounts for Deluge (CT 105)
-      ansible.builtin.blockinfile:
-        path: /etc/pve/lxc/105.conf
-        marker: "# {mark} ANSIBLE MANAGED DELUGE STORAGE"
-        block: |
-          mp0: /mnt/storage1,mp=/storage1
-          mp1: /mnt/storage2,mp=/storage2
-          mp2: /mnt/synology/nas,mp=/mnt/synology/nas
-          mp3: /mnt/synology/usb1,mp=/mnt/synology/usb1
-          mp4: /mnt/synology/usb2,mp=/mnt/synology/usb2
-      register: mount_105
-
-    - name: Reboot CT 105 if mounts changed
-      ansible.builtin.command: pct reboot 105
-      when: mount_105.changed
-
-    # CT 106 (Arr-Stack)
-    - name: Configure bind mounts for Arr-Stack (CT 106)
-      ansible.builtin.blockinfile:
-        path: /etc/pve/lxc/106.conf
-        marker: "# {mark} ANSIBLE MANAGED ARR STORAGE"
-        block: |
-          mp0: /mnt/storage1,mp=/storage1
-          mp1: /mnt/storage2,mp=/storage2
-          mp2: /mnt/synology/nas,mp=/mnt/synology/nas
-          mp3: /mnt/synology/usb1,mp=/mnt/synology/usb1
-          mp4: /mnt/synology/usb2,mp=/mnt/synology/usb2
-      register: mount_106
-
-    - name: Reboot CT 106 if mounts changed
-      ansible.builtin.command: pct reboot 106
-      when: mount_106.changed
+    - name: Schedule safe delayed reboot for Arch-server (CT 102) if changed
+      ansible.builtin.command: systemd-run --on-active=10s pct reboot 102
+      loop: "{{ container_mounts.results }}"
+      when: item.changed and item.item.id == 102

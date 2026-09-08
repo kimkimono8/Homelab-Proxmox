@@ -1,7 +1,4 @@
 ---
-- name: Ensure Host Storage and Bind Mounts are Active
-  import_playbook: configure-pve-storage.yaml
-
 - name: Deploy Deluge BitTorrent Daemon on CT 105
   hosts: deluge
   roles:
