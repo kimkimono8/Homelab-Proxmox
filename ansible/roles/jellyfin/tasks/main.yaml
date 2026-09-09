@@ -50,6 +50,16 @@
     name: jellyfin
     state: present
 
+- name: Install VA-API hardware acceleration runtime and tools
+  ansible.builtin.apt:
+    name:
+      - vainfo
+      - mesa-va-drivers
+      - intel-media-va-driver
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+
 # ==========================================
 # Hardware Acceleration & GPU Permissions
 # ==========================================
