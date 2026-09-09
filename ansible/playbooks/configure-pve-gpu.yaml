@@ -1,6 +1,6 @@
 ---
 - name: Ensure Host Level Persistent Permissions for iGPU Passthrough
-  hosts: pve
+  hosts: proxmox_nodes
   tasks:
     - name: Deploy udev rules for Intel iGPU permissions
       ansible.builtin.copy:
@@ -12,6 +12,20 @@
         group: root
         mode: '0644'
       notify: Reload udev
+
+    - name: Configure iGPU passthrough for Jellyfin (CT 104)
+      ansible.builtin.blockinfile:
+        path: /etc/pve/lxc/104.conf
+        marker: "# {mark} ANSIBLE MANAGED IGPU PASSTHROUGH"
+        block: |
+          lxc.cgroup2.devices.allow: c 226:1 rwm
+          lxc.cgroup2.devices.allow: c 226:128 rwm
+          lxc.mount.entry: /dev/dri dev/dri none bind,optional,create=dir
+      register: igpu_config
+
+    - name: Reboot CT 104 if GPU config changed
+      ansible.builtin.command: pct reboot 104
+      when: igpu_config.changed
 
   handlers:
     - name: Reload udev
