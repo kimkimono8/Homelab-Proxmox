@@ -7,6 +7,8 @@ pihole_upstream_dns:
 
 pihole_custom_records:
   - ip: "192.168.1.22"
+    domain: "pihole.home"
+  - ip: "192.168.1.22"
     domain: "agh.home"
   - ip: "192.168.1.22"
     domain: "hass.home"

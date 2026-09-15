@@ -7,6 +7,12 @@ server {
 
     client_max_body_size 64M;
 
+    {% if item.redirect_root is defined %}
+    location = / {
+        return 301 {{ item.redirect_root }};
+    }
+    {% endif %}
+
     location / {
         proxy_pass {{ item.upstream }};
         proxy_http_version 1.1;

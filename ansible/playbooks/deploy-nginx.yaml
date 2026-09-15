@@ -4,8 +4,12 @@
   become: true
   vars:
     nginx_virtual_hosts:
+      - domain: pihole.home
+        upstream: http://192.168.1.21:80
+        redirect_root: "/admin/"
       - domain: agh.home
         upstream: http://192.168.1.21:80
+        redirect_root: "/admin/"
       - domain: hass.home
         upstream: http://192.168.1.24:8123
       - domain: jellyfin.home
