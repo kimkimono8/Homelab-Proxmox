@@ -17,3 +17,7 @@ desktop.ini
 *.tfstate
 *.tfstate.*
 crash.log
+
+# Terraform Plan
+*.tfplan
+tfplan
