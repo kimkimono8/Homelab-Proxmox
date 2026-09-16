@@ -89,3 +89,6 @@
     name: jellyfin
     enabled: yes
     state: started
+
+# ==========================================
+# Memory & GC Optimization Drop-in
