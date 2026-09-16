@@ -111,9 +111,103 @@ OS       : Proxmox VE 9.x (Debian 13 trixie, kernel 7.0.14-17-pve)
 - [ ] **Disaster Recovery Pipeline:** Automated Proxmox VZDump backups targeting secondary storage[cite: 13].
 
 ---
-### Phase 5: Monitoring & Media Services (Planned)
-- [ ] **Monitoring Stack (Prometheus + Grafana):** Deploy Prometheus for metrics collection (Proxmox exporter, nginx exporter, pihole exporter) and Grafana for visualization/dashboards/alerting. Resource estimate: Prometheus 1-2 vCPU, 512-1024 MB RAM, 10-20 GB disk; Grafana 1 vCPU, 256-512 MB RAM, 5-10 GB disk.
-- [ ] **PhotoPrism:** Deploy self-hosted photo management with AI tagging, facial recognition, geo-location. Resource estimate: min 2 vCPU, 1024 MB RAM, 20 GB disk; recommended 4 vCPU, 2048-4096 MB RAM, 50+ GB disk for AI features. Nginx ingress at `photoprism.home` via CT 101 reverse proxy.
+
+## 📋 Future Planning & Roadmap
+
+### Monitoring Stack (Prometheus + Grafana)
+
+**Purpose:** Centralized metrics collection, visualization, and alerting for the homelab infrastructure.
+
+**Components:**
+- **Prometheus** — Metrics collection and time-series database
+  - Scrape metrics from: Proxmox node, LXC containers, services (Pi-hole, Nginx, Jellyfin, etc.)
+  - Use `prometheus-community/proxmox-exporter` for Proxmox API metrics
+  - Use `nginx-prometheus-exporter` for Nginx metrics
+  - Use `pihole-exporter` for Pi-hole metrics
+- **Grafana** — Dashboard and visualization
+  - Pre-built dashboards for Proxmox, LXC, Nginx, Pi-hole
+  - Custom dashboards for homelab-specific metrics
+  - Alerting rules for critical thresholds (disk usage, memory pressure, service down)
+
+**Implementation Plan:**
+1. Deploy Prometheus as a new LXC container (or VM for more resources)
+2. Deploy Grafana as a separate LXC container (or share with Prometheus)
+3. Configure Prometheus scrape targets via Ansible
+4. Import pre-built Grafana dashboards
+5. Create alerting rules and notification channels
+
+**Resource Estimate:**
+- Prometheus: 1-2 vCPU, 512-1024 MB RAM, 10-20 GB disk (depending on retention)
+- Grafana: 1 vCPU, 256-512 MB RAM, 5-10 GB disk
+
+---
+
+### PhotoPrism
+
+**Purpose:** Self-hosted photo and video management service with AI-powered tagging, facial recognition, and geo-location.
+
+**Features:**
+- Auto-tagging with AI/ML (TensorFlow)
+- Facial recognition
+- Geo-location mapping
+- Web UI with responsive design
+- Mobile app support
+- Import from various sources (local storage, cloud, network shares)
+
+**Implementation Plan:**
+1. Deploy PhotoPrism as a new LXC container
+2. Allocate sufficient resources (PhotoPrism can be resource-intensive for AI/ML tasks)
+3. Configure storage access to photo/video directories
+4. Setup reverse proxy (Nginx) for `photoprism.home`
+5. Configure initial settings (language, time zone, indexing options)
+
+**Resource Estimate:**
+- Minimum: 2 vCPU, 1024 MB RAM, 20 GB disk
+- Recommended for AI features: 4 vCPU, 2048-4096 MB RAM, 50+ GB disk (for photo library)
+
+**Terraform Resource (proposed):**
+```hcl
+photoprism = {
+  vm_id        = 110  # or next available CT ID
+  hostname     = "photoprism"
+  description  = "PhotoPrism - Self-hosted Photo Management with AI"
+  ip_address   = "192.168.1.32/24"
+  cores        = 2
+  memory       = 1024
+  swap         = 512
+  disk_size    = 20
+  unprivileged = true
+  keyctl       = false
+  tags         = ["media", "photos", "ai", "iac"]
+}
+```
+
+**Ansible Role (proposed):**
+- Create `roles/photoprism/` with:
+  - `tasks/main.yaml` — Install PhotoPrism, configure service
+  - `defaults/main.yaml` — Configuration variables
+  - `templates/` — Config files if needed
+
+**Nginx Ingress (proposed):**
+- Add `photoprism.home` virtual host configuration
+- Update `roles/nginx/templates/vhost.conf.j2` or create new template
+
+---
+
+### Next Steps
+
+1. **Priority 1:** Deploy monitoring stack (Prometheus + Grafana) for better visibility
+2. **Priority 2:** Deploy PhotoPrism for personal photo management
+3. **Ongoing:** Complete Phase 4 items (Rocky-lab VM, Disaster Recovery)
+
+---
+
+### Notes
+
+- All new services should be deployed using Terraform + Ansible following GitOps workflow
+- Resource allocation should be based on actual usage monitoring (not over-provisioning)
+- Use `*.home` domain for all new services via Nginx reverse proxy
+- Review and update this README after each deployment
 
 ---
 
