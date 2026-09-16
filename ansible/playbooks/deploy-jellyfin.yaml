@@ -1,5 +1,14 @@
 ---
-- name: Deploy Jellyfin Media Server on CT 104
+- name: Ensure CT 104 Resource Allocation on PVE Host
+  hosts: pve
+  become: true
+  tasks:
+    - name: Ensure CT 104 has 2048MB RAM and 1024MB Swap
+      ansible.builtin.command:
+        cmd: pct set 104 -memory 2048 -swap 1024
+      changed_when: false
+
+- name: Deploy and Configure Jellyfin Media Server
   hosts: jellyfin
   roles:
     - jellyfin
