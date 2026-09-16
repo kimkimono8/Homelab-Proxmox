@@ -1,6 +1,6 @@
 # 🏰 Homelab Proxmox (IaC & GitOps)
 
-Declarative, enterprise-grade Homelab infrastructure running on Proxmox VE (Dell 5290 - 8GB RAM / 256GB SSD). Built with Infrastructure as Code (Terraform) and Configuration Management (Ansible) under a strict GitOps workflow.
+Declarative, enterprise-grade Homelab infrastructure running on Proxmox VE (MSI PRO H610M-E — i3-12100 / 8GB DDR4 / 250GB NVMe + 3× 1TB HDD / 750W PSU). Built with Infrastructure as Code (Terraform) and Configuration Management (Ansible) under a strict GitOps workflow.
 
 ---
 
@@ -16,11 +16,54 @@ Declarative, enterprise-grade Homelab infrastructure running on Proxmox VE (Dell
 
 ---
 
+## 🖥️ Host Hardware Specification
+
+```
+CPU      : Intel Core i3-12100 (12th Gen, 4C/8T, max 4.3 GHz)
+RAM      : 8 GB DDR4-2400 MHz (1×8 GB, single-channel, 1.2 V)
+SSD      : Samsung SSD 970 EVO Plus 250 GB NVMe (system + LVM pve-root/pve-data)
+HDD      : 1 TB ×3 (ST1000LM024 ×2, WDC WD10SPZX ×1) → /mnt/backup, /mnt/hdd2, /mnt/hdd3
+MB       : MSI PRO H610M-E DDR4 (MS-7D48, rev 2.0)
+PSU      : 750W 80+ Bronze
+NIC      : Realtek RTL8111/8168/8211/8411 PCI-E Gigabit (eth0)
+GPU      : Intel UHD Graphics 730 (Alder Lake-S GT1, onboard)
+BIOS     : A.M0 — 08/05/2025
+OS       : Proxmox VE 9.x (Debian 13 trixie, kernel 7.0.14-17-pve)
+```
+
+### Mounted Storage
+
+| Mount       | Device  | Model                        | Size   | Used   |
+|-------------|---------|------------------------------|--------|--------|
+| `/`         | nvme0n1 | Samsung SSD 970 EVO Plus 250G| 67 GB  | 5.7G   |
+| swap        | nvme0n1 + zram0 | —                  | 11 GB  | 157M   |
+| `/mnt/backup`| sda1   | ST1000LM024 HN-M101MBB       | 931.5G | 143G   |
+| `/mnt/hdd2` | sdb1    | WDC WD10SPZX-08Z10           | 931.5G | 2.1M   |
+| `/mnt/hdd3` | sdc1    | ST1000LM024 HN-M101MBB       | 931.5G | 2.1M   |
+| `/mnt/usb1` | sdd1    | WDC WD10JMVW-11AJGS2         | 931.5G | —      |
+| `/mnt/usb2` | sde1    | WDC WD10JMVW-11AJGS2         | 931.5G | —      |
+
+### LXC / VM Disk Allocation (LVM `pve-data`, 137.5G pool)
+
+| CT/VM | Hostname        | Disk |
+|-------|-----------------|------|
+| 100   | pihole          | 4G   |
+| 101   | nginx           | 8G   |
+| 102   | Arch-server     | 8G   |
+| 103   | home-assistant  | 8G   |
+| 104   | jellyfin        | 16G  |
+| 105   | deluge          | 8G   |
+| 106   | arr-stack       | 10G  |
+| 107   | hermes-agent    | 8G   |
+| 108   | tailscale       | 8G   |
+
+---
+
 ## 🌐 Network & Compute Matrix (Subnet: `192.168.1.0/24`)
 
 | Host / VMID | Hostname | Role / Service | OS | vCPU | RAM | Disk | IP Address |
 | :--- | :--- | :--- | :--- | :---: | :---: | :---: | :--- |
-| **Physical Host** | `pve` | Proxmox VE Hypervisor (GUI `:8006`) | PVE 8.x | 4 | ~1000 MB | 256 GB | `192.168.1.20` |
+| **Physical Host** | `pve` | Proxmox VE Hypervisor (GUI `:8006`) | Debian 13 (trixie) / PVE 9.x | 8 | ~3.1 GB | 250 GB NVMe + 3× 1TB HDD | `192.168.1.20` |
 | **CT 100** | `pihole` | Pi-hole v6 (Core DNS & Local Domain Resolver) | Debian 12 | 1 | 128 MB | 4 GB | `192.168.1.21` |
 | **CT 101** | `nginx` | Edge Ingress & Reverse Proxy (`*.home`) | Debian 12 | 1 | 128 MB | 4 GB | `192.168.1.22` |
 | **CT 102** | `Arch-server` | Control Plane, GitOps Runner & Apple Samba Server | Arch Linux | 2 | 2048 MB | 16 GB | `192.168.1.23` |
@@ -29,8 +72,8 @@ Declarative, enterprise-grade Homelab infrastructure running on Proxmox VE (Dell
 | **CT 105** | `deluge` | Deluge Torrent Daemon | Debian 12 | 1 | 256 MB | 8 GB | `192.168.1.26` |
 | **CT 106** | `arr-stack` | Prowlarr + Radarr + Sonarr Automation | Debian 12 | 1 | 768 MB | 8 GB | `192.168.1.27` |
 | **CT 108** | `tailscale` | Dedicated Subnet Router (`192.168.1.0/24`) & Exit Node | Debian 12 | 1 | 256 MB | 8 GB | `192.168.1.28` |
-| **CT 107** | `hermes-agent` | Hermes AI Agent Runtime | Debian 12 | 1 | 512 MB | 8 GB | `192.168.1.30` |
-| **VM 200** | `rocky-lab` | Enterprise Testing Sandbox (Rocky Linux) | Rocky 9 | 2 | 2048 MB | 20 GB | `192.168.1.29` |
+| **CT 107** | `hermes-agent` | Hermes AI Agent Runtime (active) | Debian 12 | 1 | 512 MB | 8 GB | `192.168.1.31` |
+| **VM 200** | `rocky-lab` | Enterprise Testing Sandbox (Rocky Linux) — *planned, not yet deployed* | Rocky 9 | 2 | 2048 MB | 20 GB | `192.168.1.29` (planned) |
 
 ---
 
@@ -62,7 +105,7 @@ Declarative, enterprise-grade Homelab infrastructure running on Proxmox VE (Dell
 - [x] **Fleet-Wide Password Access:** Automate root password provisioning and OpenSSH drop-in configs (`/etc/ssh/sshd_config.d/01-permit-password.conf`) across all containers for mobile management (Termius)[cite: 13].
 
 ### Phase 4: Enterprise Linux Lab & AI Runtime (Next Target)
-- [ ] **AI Autonomous Agent:** Deploy CT 107 (`hermes-agent` - `192.168.1.30`) runtime container[cite: 13].
+- [x] **AI Autonomous Agent:** Deploy CT 107 (`hermes-agent` - `192.168.1.31`) runtime container — *active*.
 - [ ] **Enterprise Testing VM:** Deploy VM 200 (`rocky-lab` - `192.168.1.29`) KVM guest for RHEL sysadmin & SELinux verification[cite: 13].
 - [ ] **Disaster Recovery Pipeline:** Automated Proxmox VZDump backups targeting secondary storage[cite: 13].
 
@@ -70,62 +113,106 @@ Declarative, enterprise-grade Homelab infrastructure running on Proxmox VE (Dell
 
 ## 📂 Repository Layout
 
-~~text
+```text
 Homelab-Proxmox/
-├── .github/workflows/ci.yaml    # Automated CI Quality Gates (Gitleaks, Terraform, Ansible)
-├── .gitignore                  # Security boundary (excludes .tfstate, *.tfvars)
-├── README.md                   # System Architecture Blueprint & Roadmap
-├── terraform/                  # Day 0 Compute Provisioning
-│   ├── versions.tf
-│   ├── variables.tf
-│   ├── terraform.tfvars        # (Secret) Proxmox API Credentials & root password
-│   ├── containers.tf           # Reusable Module with Data Matrix
-│   └── modules/lxc_container/  # Container module with lifecycle guards
-└── ansible/                    # Day 1 & Day 2 Configuration Management
+├── .github/workflows/ci.yaml       # Automated CI Quality Gates (Gitleaks, Terraform, Ansible)
+├── .gitattributes
+├── .gitignore                       # Excludes .tfstate, *.tfvars, .terraform/
+├── README.md                        # System Architecture Blueprint & Roadmap
+├── docs/                            # Documentation (placeholder)
+│   └── .gitkeep
+├── terraform/                       # Day 0 Compute Provisioning
+│   ├── .terraform/                  # (gitignored) providers, modules cache
+│   ├── .terraform.lock.hcl          # Provider version lock file
+│   ├── terraform.tfstate            # (gitignored) state
+│   ├── terraform.tfstate.backup     # (gitignored) state backup
+│   ├── tfplan                        # (gitignored) planned actions
+│   ├── versions.tf                   # Provider & terraform version constraints
+│   ├── variables.tf                  # Input variable declarations
+│   ├── moved.tf                      # Terraform moved blocks (state migration)
+│   ├── containers.tf                 # LXC/CT & VM declaration (data matrix + module call)
+│   └── modules/lxc_container/       # Reusable container module
+│       ├── main.tf
+│       ├── variables.tf
+│       └── versions.tf
+└── ansible/                         # Day 1 & Day 2 Configuration Management
     ├── ansible.cfg
     ├── inventory/
-    │   └── hosts.yaml          # Unified Core Infrastructure Inventory
-    ├── playbooks/
-    │   ├── configure-pve-gpu.yaml      # Intel iGPU render node passthrough
-    │   ├── configure-pve-power.yaml    # Host CPU governor & thermald management
-    │   ├── configure-pve-storage.yaml  # High-throughput storage automation
-    │   ├── configure-tailscale-lxc.yaml# PVE TUN device passthrough setup
-    │   ├── set-root-password.yaml      # Fleet-wide mobile administration
-    │   ├── deploy-shell.yaml           # Common Zsh/Starship environment
-    │   ├── deploy-pihole.yaml          # Core DNS orchestration
-    │   ├── deploy-nginx.yaml           # Ingress proxy configuration
-    │   ├── deploy-homeassistant.yaml   # IoT runtime deployment
-    │   ├── deploy-jellyfin.yaml        # Transcoding & media platform
-    │   ├── deploy-deluge.yaml          # Torrent download engine
-    │   ├── deploy-arr.yaml             # Media indexer & stack orchestration
-    │   ├── deploy-tailscale.yaml       # Subnet routing configuration
-    │   └── deploy-samba.yaml           # iOS-optimized file sharing
-    └── roles/
-        ├── common_shell/       # Standardized Zsh/Starship/LSD environment
-        ├── pihole/             # Pi-hole v6 unattended installer
-        ├── nginx/              # Ingress routing and virtual host orchestration
-        ├── homeassistant/      # Python venv Home Assistant Core
-        ├── jellyfin/           # Media server apt repository & systemd service
-        ├── deluge/             # BitTorrent daemon and web UI
-        ├── arr_stack/          # Prowlarr, Radarr, Sonarr stack
-        ├── tailscale_node/     # Tailscale subnet router & IP forwarding
-        └── samba_server/       # iOS-optimized Samba & Avahi mDNS sharing
-~~
+    │   ├── .gitkeep
+    │   └── hosts.yaml                # Unified Core Infrastructure Inventory
+    ├── playbooks/                   # Orchestration playbooks (ordered by execution dependency)
+    │   ├── configure-pve-gpu.yaml       # Intel iGPU render node passthrough
+    │   ├── configure-pve-power.yaml     # Host CPU governor & thermald management
+    │   ├── configure-pve-storage.yaml   # High-throughput storage automation
+    │   ├── configure-tailscale-lxc.yaml # PVE TUN device passthrough setup
+    │   ├── set-root-password.yaml       # Fleet-wide mobile administration
+    │   ├── deploy-shell.yaml            # Common Zsh/Starship environment
+    │   ├── deploy-pihole.yaml           # Core DNS orchestration
+    │   ├── deploy-nginx.yaml            # Ingress proxy configuration
+    │   ├── deploy-homeassistant.yaml    # IoT runtime deployment
+    │   ├── deploy-jellyfin.yaml         # Transcoding & media platform
+    │   ├── deploy-deluge.yaml           # Torrent download engine
+    │   ├── deploy-arr.yaml              # Media indexer & stack orchestration
+    │   ├── deploy-tailscale.yaml        # Subnet routing configuration
+    │   ├── deploy-samba.yaml            # iOS-optimized file sharing
+    │   └── deploy-adguard.yaml          # AdGuard Home deployment (role present, playbook TBD)
+    └── roles/                        # Reusable Ansible roles
+        ├── adguard/                   # AdGuard Home
+        │   ├── defaults/main.yaml
+        │   ├── handlers/main.yaml
+        │   ├── tasks/main.yaml
+        │   └── templates/AdGuardHome.yaml.j2
+        ├── arr_stack/                 # Prowlarr + Radarr + Sonarr
+        │   ├── handlers/main.yaml
+        │   └── tasks/main.yaml
+        ├── common_shell/              # Zsh/Starship/LSD environment
+        │   ├── files/starship.toml
+        │   ├── files/zshrc
+        │   └── tasks/main.yaml
+        ├── deluge/                    # BitTorrent daemon & web UI
+        │   ├── handlers/main.yaml
+        │   └── tasks/main.yaml
+        ├── homeassistant/             # Home Assistant Core (Python venv)
+        │   ├── defaults/main.yaml
+        │   ├── handlers/main.yaml
+        │   ├── tasks/main.yaml
+        │   └── templates/configuration.yaml.j2
+        ├── jellyfin/                  # Media server (apt repo + systemd)
+        │   ├── handlers/main.yaml
+        │   └── tasks/main.yaml
+        ├── nginx/                     # Ingress routing & virtual hosts
+        │   ├── handlers/main.yaml
+        │   ├── tasks/main.yaml
+        │   └── templates/vhost.conf.j2
+        ├── pihole/                    # Pi-hole v6 unattended installer
+        │   ├── defaults/main.yaml
+        │   ├── handlers/main.yaml
+        │   ├── tasks/main.yaml
+        │   └── templates/custom.list.j2
+        │   └── templates/setupVars.conf.j2
+        ├── samba_server/              # iOS-optimized Samba & Avahi mDNS
+        │   ├── handlers/main.yaml
+        │   ├── tasks/main.yaml
+        │   └── templates/smb.conf.j2
+        └── tailscale_node/            # Tailscale subnet router & IP forwarding
+            ├── defaults/main.yaml
+            └── tasks/main.yaml
+```
 
 ---
 
 ## 🚀 Quickstart & Provisioning Workflow
 
 ### 1. Provision Compute Infrastructure (Terraform Day 0)
-~~bash
+```bash
 cd terraform
 terraform init
 terraform validate
 terraform apply -auto-approve
-~~
+```
 
 ### 2. Configure Host Devices, Power, Storage & Access (Ansible Day 1)
-~~bash
+```bash
 cd ../ansible
 # Host Power Management & Thermal Controls
 ansible-playbook -i inventory/hosts.yaml playbooks/configure-pve-power.yaml
@@ -136,20 +223,20 @@ ansible-playbook -i inventory/hosts.yaml playbooks/configure-pve-storage.yaml
 
 # Remote Password Authentication Setup
 ansible-playbook -i inventory/hosts.yaml playbooks/set-root-password.yaml
-~~
+```
 
 ### 3. Deploy Core Network & Ingress Services (Ansible Day 1)
-~~bash
+```bash
 ansible-playbook -i inventory/hosts.yaml playbooks/deploy-pihole.yaml
 ansible-playbook -i inventory/hosts.yaml playbooks/deploy-nginx.yaml
 ansible-playbook -i inventory/hosts.yaml playbooks/deploy-tailscale.yaml
-~~
+```
 
 ### 4. Deploy Media Acquisition, Sharing & Automation Stack (Ansible Day 2)
-~~bash
+```bash
 # Media playbooks automatically run configure-pve-storage.yaml as a prerequisite
 ansible-playbook -i inventory/hosts.yaml playbooks/deploy-jellyfin.yaml
 ansible-playbook -i inventory/hosts.yaml playbooks/deploy-deluge.yaml
 ansible-playbook -i inventory/hosts.yaml playbooks/deploy-arr.yaml
 ansible-playbook -i inventory/hosts.yaml playbooks/deploy-samba.yaml
-~~
+```
