@@ -113,6 +113,19 @@ OS       : Proxmox VE 9.x (Debian 13 trixie, kernel 7.0.14-17-pve)
 ---
 
 ### Phase 5: Monitoring & Media Services (Planned)
+
+---
+
+### Phase 6: Resource Optimization (Completed)
+- [x] **LXC Resource Tuning:** Adjusted CPU cores and RAM per actual usage analysis.
+  - CT 100 pihole: 2c → 1c
+  - CT 103 home-assistant: 1c/512M → 2c/768M
+  - CT 104 jellyfin: 4c → 8c (max for transcoding)
+  - CT 105 deluge: 2c → 1c
+  - CT 106 arr-stack: 1c/768M → 2c/1536M
+  - CT 107 hermes-agent: 1c/512M → 2c/1024M
+  - CT 108 tailscale: 2c → 1c
+
 - [ ] **Monitoring Stack (Prometheus + Grafana):** Deploy Prometheus for metrics collection (Proxmox exporter, nginx exporter, pihole exporter) and Grafana for visualization/dashboards/alerting. Resource estimate: Prometheus 1-2 vCPU, 512-1024 MB RAM, 10-20 GB disk; Grafana 1 vCPU, 256-512 MB RAM, 5-10 GB disk.
 - [ ] **PhotoPrism:** Deploy self-hosted photo management with AI tagging, facial recognition, geo-location. Resource estimate: min 2 vCPU, 1024 MB RAM, 20 GB disk; recommended 4 vCPU, 2048-4096 MB RAM, 50+ GB disk for AI features. Nginx ingress at `photoprism.home` via CT 101 reverse proxy.
 
