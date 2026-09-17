@@ -54,6 +54,24 @@
     force: yes
   notify: Restart homeassistant
 
+- name: Ensure .storage directory exists
+  ansible.builtin.file:
+    path: "{{ homeassistant_config_dir }}/.storage"
+    state: directory
+    owner: "{{ homeassistant_user }}"
+    group: "{{ homeassistant_user }}"
+    mode: '0755'
+
+- name: Deploy HTTP storage config (trusted_proxies, use_x_forwarded_for)
+  ansible.builtin.copy:
+    src: files/http_storage.json
+    dest: "{{ homeassistant_config_dir }}/.storage/http"
+    owner: "{{ homeassistant_user }}"
+    group: "{{ homeassistant_user }}"
+    mode: '0644'
+    force: yes
+  notify: Restart homeassistant
+
 - name: Install uv binary
   ansible.builtin.shell: |
     curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh
