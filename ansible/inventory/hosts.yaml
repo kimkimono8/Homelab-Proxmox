@@ -24,6 +24,16 @@ all:
           ansible_host: 192.168.1.26
         arr_stack:
           ansible_host: 192.168.1.27
+    monitoring:
+      hosts:
+        monitoring_node:
+          ansible_host: 192.168.1.32
+          ansible_user: root
+    photoprism:
+      hosts:
+        photoprism_node:
+          ansible_host: 192.168.1.33
+          ansible_user: root
   vars:
     ansible_user: root
     ansible_ssh_common_args: '-o StrictHostKeyChecking=accept-new'
