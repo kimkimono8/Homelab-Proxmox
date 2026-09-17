@@ -39,6 +39,8 @@
         name: "Deluge"
       - id: 106
         name: "Arr-Stack"
+      - id: 110
+        name: "PhotoPrism"
 
     mount_targets:
       - "/mnt/backup"
