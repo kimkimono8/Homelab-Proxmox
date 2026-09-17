@@ -104,6 +104,32 @@ locals {
       keyctl       = false
       tags         = ["ai", "agent", "cli", "iac"]
     }
+    monitoring = {
+      vm_id        = 109
+      hostname     = "monitoring"
+      description  = "Prometheus, Alertmanager, and Grafana Stack"
+      ip_address   = "192.168.1.32/24"
+      cores        = 1
+      memory       = 512
+      swap         = 512
+      disk_size    = 10
+      unprivileged = true
+      keyctl       = false
+      tags         = ["monitoring", "prometheus", "grafana", "iac"]
+    }
+    photoprism = {
+      vm_id        = 110
+      hostname     = "photoprism"
+      description  = "PhotoPrism Ultra-Lightweight Engine"
+      ip_address   = "192.168.1.33/24"
+      cores        = 1
+      memory       = 512
+      swap         = 512
+      disk_size    = 4
+      unprivileged = true
+      keyctl       = false
+      tags         = ["media", "photos", "photoprism", "iac"]
+    }
   }
 }
 
