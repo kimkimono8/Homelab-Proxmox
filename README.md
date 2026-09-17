@@ -1,4 +1,3 @@
-Warning: Identity file /root/.ssh/id_rsa not accessible: No such file or directory.
 # 🏰 Homelab Proxmox (IaC & GitOps)
 
 Declarative, enterprise-grade Homelab infrastructure running on Proxmox VE (MSI PRO H610M-E — i3-12100 / 8GB DDR4 / 250GB NVMe + 3× 1TB HDD / 750W PSU). Built with Infrastructure as Code (Terraform) and Configuration Management (Ansible) under a strict GitOps workflow.
