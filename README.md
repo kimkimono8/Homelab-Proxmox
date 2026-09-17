@@ -67,13 +67,13 @@ OS       : Proxmox VE 9.x (Debian 13 trixie, kernel 7.0.14-17-pve)
 | **Physical Host** | `pve` | Proxmox VE Hypervisor (GUI `:8006`) | Debian 13 (trixie) / PVE 9.x | 8 | ~3.1 GB | 250 GB NVMe + 3× 1TB HDD | `192.168.1.20` |
 | **CT 100** | `pihole` | Pi-hole v6 (Core DNS & Local Domain Resolver) | Debian 12 | 1 | 128 MB | 4 GB | `192.168.1.21` |
 | **CT 101** | `nginx` | Edge Ingress & Reverse Proxy (`*.home`) | Debian 12 | 1 | 128 MB | 4 GB | `192.168.1.22` |
-| **CT 102** | `Arch-server` | Control Plane, GitOps Runner & Apple Samba Server | Arch Linux | 2 | 2048 MB | 16 GB | `192.168.1.23` |
-| **CT 103** | `home-assistant` | Home Assistant Core (IoT Automation) | Debian 12 | 1 | 512 MB | 8 GB | `192.168.1.24` |
-| **CT 104** | `jellyfin` | Jellyfin Media Server (Native QSV + CFS Priority) | Debian 12 | 4 | 1024 MB | 16 GB | `192.168.1.25` |
+| **CT 102** | `Arch-server` | Control Plane, GitOps Runner & Apple Samba Server | Arch Linux | 2 | 512 MB | 16 GB | `192.168.1.23` |
+| **CT 103** | `home-assistant` | Home Assistant Core (IoT Automation) | Debian 12 | 2 | 768 MB | 8 GB | `192.168.1.24` |
+| **CT 104** | `jellyfin` | Jellyfin Media Server (Native QSV + CFS Priority) | Debian 12 | 8 | 1024 MB | 16 GB | `192.168.1.25` |
 | **CT 105** | `deluge` | Deluge Torrent Daemon | Debian 12 | 1 | 256 MB | 8 GB | `192.168.1.26` |
-| **CT 106** | `arr-stack` | Prowlarr + Radarr + Sonarr Automation | Debian 12 | 1 | 768 MB | 8 GB | `192.168.1.27` |
+| **CT 106** | `arr-stack` | Prowlarr + Radarr + Sonarr Automation | Debian 12 | 2 | 1536 MB | 8 GB | `192.168.1.27` |
 | **CT 108** | `tailscale` | Dedicated Subnet Router (`192.168.1.0/24`) & Exit Node | Debian 12 | 1 | 256 MB | 8 GB | `192.168.1.28` |
-| **CT 107** | `hermes-agent` | Hermes AI Agent Runtime (active) | Debian 12 | 1 | 512 MB | 8 GB | `192.168.1.31` |
+| **CT 107** | `hermes-agent` | Hermes AI Agent Runtime (active) | Debian 12 | 2 | 1024 MB | 8 GB | `192.168.1.31` |
 | **VM 200** | `rocky-lab` | Enterprise Testing Sandbox (Rocky Linux) — *planned, not yet deployed* | Rocky 9 | 2 | 2048 MB | 20 GB | `192.168.1.29` (planned) |
 
 ---
