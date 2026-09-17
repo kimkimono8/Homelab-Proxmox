@@ -5,7 +5,7 @@ locals {
       hostname     = "pihole"
       description  = "Pi-hole DNS & Ad-blocking Node"
       ip_address   = "192.168.1.21/24"
-      cores        = 2
+      cores        = 1
       memory       = 128
       swap         = 128
       disk_size    = 4
@@ -30,7 +30,7 @@ locals {
       description  = "Home Assistant Core (Python venv)"
       ip_address   = "192.168.1.24/24"
       cores        = 2
-      memory       = 1024
+      memory       = 768
       swap         = 512
       disk_size    = 8
       unprivileged = true  # กลับมาใช้ Unprivileged มาตรฐาน
@@ -57,7 +57,7 @@ locals {
       hostname     = "deluge"
       description  = "Deluge BitTorrent Daemon"
       ip_address   = "192.168.1.26/24"
-      cores        = 2
+      cores        = 1
       memory       = 256
       swap         = 256
       disk_size    = 8
@@ -71,7 +71,7 @@ locals {
       description  = "Media Automation Stack (Prowlarr, Radarr, Sonarr, FlareSolverr)"
       ip_address   = "192.168.1.27/24"
       cores        = 2
-      memory       = 1024
+      memory       = 1536
       swap         = 512
       disk_size    = 10
       unprivileged = true
@@ -83,7 +83,7 @@ locals {
       hostname     = "tailscale"
       description  = "Tailscale Subnet Router & Exit Node Gateway"
       ip_address   = "192.168.1.28/24"
-      cores        = 2
+      cores        = 1
       memory       = 256
       swap         = 256
       disk_size    = 8
