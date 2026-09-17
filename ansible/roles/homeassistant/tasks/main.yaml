@@ -60,6 +60,14 @@
   args:
     creates: /usr/local/bin/uv
 
+- name: Ensure ansible remote_tmp directory exists with correct permissions
+  ansible.builtin.file:
+    path: "{{ homeassistant_base_dir }}/.ansible/tmp"
+    state: directory
+    owner: "{{ homeassistant_user }}"
+    group: "{{ homeassistant_user }}"
+    mode: '0755'
+
 - name: Create Python isolated venv and install Home Assistant Core
   ansible.builtin.shell: |
     uv venv --python 3.14 {{ homeassistant_venv_dir }}
