@@ -8,10 +8,16 @@
     update_cache: yes
     cache_valid_time: 3600
 
-- name: Ensure deluge service user exists
+- name: Ensure deluge service group exists (mapped to adminx GID 1000)
+  ansible.builtin.group:
+    name: deluge
+    gid: 1000
+
+- name: Ensure deluge service user exists (mapped to adminx UID 1000)
   ansible.builtin.user:
     name: deluge
-    system: yes
+    uid: 1000
+    group: deluge
     home: /var/lib/deluge
     shell: /bin/false
     create_home: yes
@@ -62,6 +68,16 @@
       [Install]
       WantedBy=multi-user.target
   notify: Restart deluge services
+
+- name: Ensure correct ownership on deluge data directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    owner: deluge
+    group: deluge
+    recurse: yes
+  loop:
+    - /var/lib/deluge
+    - /var/lib/deluged
 
 - name: Ensure deluge services are enabled and started
   ansible.builtin.systemd:
