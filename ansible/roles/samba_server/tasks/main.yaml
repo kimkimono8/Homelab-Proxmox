@@ -25,6 +25,13 @@
     state: started
   become: true
 
+- name: Enable and start Samba nmb service
+  ansible.builtin.systemd:
+    name: nmb
+    enabled: yes
+    state: started
+  become: true
+
 - name: Enable and start Samba smb service
   ansible.builtin.systemd:
     name: smb
