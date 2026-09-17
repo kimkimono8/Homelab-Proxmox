@@ -18,6 +18,13 @@
   become: true
   notify: Restart Samba and Avahi
 
+- name: Ensure /mnt directory is owned by samba user for SMB write access
+  ansible.builtin.file:
+    path: /mnt
+    owner: "{{ samba_user }}"
+    group: "{{ samba_user }}"
+  become: true
+
 - name: Enable and start Avahi mDNS daemon
   ansible.builtin.systemd:
     name: avahi-daemon
