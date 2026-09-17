@@ -35,7 +35,7 @@ alias tfd="terraform fmt -recursive"
 alias tfv="terraform validate"
 
 # --- Ansible Homelab Automation ---
-export ANSIBLE_INVENTORY=~/projects/Homelab-Proxmox/ansible/inventory/hosts.yaml
+export ANSIBLE_INVENTORY=/mnt/backup/projects/Homelab-Proxmox/ansible/inventory/hosts.yaml
 alias ap="ansible-playbook -i $ANSIBLE_INVENTORY"
 alias apc="ansible-playbook -i $ANSIBLE_INVENTORY --syntax-check"
 alias aping="ansible all -i $ANSIBLE_INVENTORY -m ping"
