@@ -1,2 +1,9 @@
 # Home Assistant Core Configuration (Managed Declaratively by Ansible)
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+{% for proxy in homeassistant_trusted_proxies %}
+    - {{ proxy }}
+{% endfor %}
+
 default_config:
