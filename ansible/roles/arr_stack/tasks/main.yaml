@@ -16,10 +16,16 @@
     update_cache: yes
     cache_valid_time: 3600
 
-- name: Ensure arr service user exists
+- name: Ensure arr service group exists (mapped to adminx GID 1000)
+  ansible.builtin.group:
+    name: media
+    gid: 1000
+
+- name: Ensure arr service user exists (mapped to adminx UID 1000)
   ansible.builtin.user:
     name: media
-    system: yes
+    uid: 1000
+    group: media
     shell: /bin/false
     home: /var/lib/media
     create_home: yes
