@@ -3,6 +3,12 @@
 server {
     listen 80;
     listen [::]:80;
+{% if item.listen_extra is defined %}
+{% for port in item.listen_extra %}
+    listen {{ port }};
+    listen [::]:{{ port }};
+{% endfor %}
+{% endif %}
     server_name {{ item.domain }};
 
     client_max_body_size 64M;

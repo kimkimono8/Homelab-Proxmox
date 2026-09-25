@@ -24,5 +24,7 @@
         upstream: http://192.168.1.27:8989
       - domain: flaresolverr.home
         upstream: http://192.168.1.27:8191
+        listen_extra:
+          - 8199
   roles:
     - nginx
