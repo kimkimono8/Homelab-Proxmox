@@ -34,9 +34,9 @@ all:
         photoprism_node:
           ansible_host: 192.168.1.33
           ansible_user: root
-    storage_nodes:
+    ai:
       hosts:
-        arch_server:
+        hermes:
           ansible_host: 192.168.1.23
   vars:
     ansible_user: root

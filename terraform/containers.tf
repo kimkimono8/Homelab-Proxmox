@@ -91,18 +91,20 @@ locals {
       keyctl       = false
       tags         = ["network", "vpn", "tailscale", "iac"]
     }
-    hermes_agent = {
-      vm_id        = 107
-      hostname     = "hermes-agent"
-      description  = "Hermes AI Autonomous CLI Runtime"
-      ip_address   = "192.168.1.31/24"
-      cores        = 2
-      memory       = 1024
-      swap         = 512
-      disk_size    = 8
-      unprivileged = true
-      keyctl       = false
-      tags         = ["ai", "agent", "cli", "iac"]
+    hermes = {
+      vm_id            = 102
+      hostname         = "hermes"
+      description      = "Hermes AI Autonomous CLI Runtime (Arch Linux)"
+      ip_address       = "192.168.1.23/24"
+      cores            = 2
+      memory           = 1024
+      swap             = 512
+      disk_size        = 8
+      unprivileged     = true
+      keyctl           = false
+      ostype           = "archlinux"
+      template_file_id = "local:vztmpl/archlinux-base_20260420-1_amd64.tar.zst"
+      tags             = ["ai", "agent", "cli", "arch", "iac"]
     }
     monitoring = {
       vm_id        = 109
@@ -148,7 +150,9 @@ module "containers" {
   tags           = each.value.tags
   ssh_public_key = var.ssh_public_key
 
-  unprivileged = lookup(each.value, "unprivileged", true)
-  keyctl       = lookup(each.value, "keyctl", false)
-  password     = lookup(each.value, "password", var.lxc_default_password)
+  unprivileged     = lookup(each.value, "unprivileged", true)
+  keyctl           = lookup(each.value, "keyctl", false)
+  password         = lookup(each.value, "password", var.lxc_default_password)
+  ostype           = lookup(each.value, "ostype", "debian")
+  template_file_id = lookup(each.value, "template_file_id", "local:vztmpl/debian-12-standard_12.12-1_amd64.tar.zst")
 }
