@@ -18,4 +18,5 @@ variable "lxc_default_password" {
   type        = string
   description = "Default root password for LXC containers"
   sensitive   = true
+  default     = null
 }

@@ -1,4 +1,16 @@
 ---
+# 1. Package Installation for Debian / PVE
+- name: Install Samba, VFS modules and Avahi via APT
+  ansible.builtin.apt:
+    name:
+      - samba
+      - samba-vfs-modules
+      - avahi-daemon
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+  when: ansible_facts['os_family'] == "Debian"
+
 - name: Install Samba and Avahi via Pacman
   community.general.pacman:
     name:
@@ -6,8 +18,25 @@
       - avahi
       - nss-mdns
     state: present
-  become: true
+  when: ansible_facts['os_family'] == "Archlinux"
 
+# 2. User & Group Provisioning (aligned with host UID/GID 101000)
+- name: Ensure Samba service group exists
+  ansible.builtin.group:
+    name: "{{ samba_user }}"
+    gid: "{{ samba_gid }}"
+    state: present
+
+- name: Ensure Samba service user exists
+  ansible.builtin.user:
+    name: "{{ samba_user }}"
+    uid: "{{ samba_uid }}"
+    group: "{{ samba_user }}"
+    shell: /bin/bash
+    create_home: yes
+    state: present
+
+# 3. Configuration & Template
 - name: Deploy declarative smb.conf template
   ansible.builtin.template:
     src: smb.conf.j2
@@ -15,43 +44,42 @@
     owner: root
     group: root
     mode: '0644'
-  become: true
   notify: Restart Samba and Avahi
 
-- name: Ensure /mnt directory is owned by samba user for SMB write access
-  ansible.builtin.file:
-    path: /mnt
-    owner: "{{ samba_user }}"
-    group: "{{ samba_user }}"
-  become: true
-
+# 4. Service Daemons Enable & Start
 - name: Enable and start Avahi mDNS daemon
   ansible.builtin.systemd:
     name: avahi-daemon
     enabled: yes
     state: started
-  become: true
 
-- name: Enable and start Samba nmb service
+- name: Enable and start Samba services (Debian)
   ansible.builtin.systemd:
-    name: nmb
+    name: "{{ item }}"
     enabled: yes
     state: started
-  become: true
+  loop:
+    - smbd
+    - nmbd
+  when: ansible_facts['os_family'] == "Debian"
 
-- name: Enable and start Samba smb service
+- name: Enable and start Samba services (Arch Linux)
   ansible.builtin.systemd:
-    name: smb
+    name: "{{ item }}"
     enabled: yes
     state: started
-  become: true
+  loop:
+    - smb
+    - nmb
+  when: ansible_facts['os_family'] == "Archlinux"
 
-- name: Set Samba password for user interactively (no plaintext saved)
+# 5. User Password Setup in Samba
+- name: Set Samba password for user (no plaintext saved)
   ansible.builtin.shell: |
     set -o pipefail
     (echo "{{ samba_password }}"; echo "{{ samba_password }}") | smbpasswd -s -a {{ samba_user }}
   args:
     executable: /bin/bash
-  become: true
   no_log: true
   changed_when: false
+  when: samba_password is defined and samba_password | length > 0

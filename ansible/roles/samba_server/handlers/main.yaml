@@ -3,7 +3,7 @@
   ansible.builtin.systemd:
     name: "{{ item }}"
     state: restarted
-  become: true
   loop:
-    - smb
+    - "{{ 'smbd' if ansible_facts['os_family'] == 'Debian' else 'smb' }}"
+    - "{{ 'nmbd' if ansible_facts['os_family'] == 'Debian' else 'nmb' }}"
     - avahi-daemon
