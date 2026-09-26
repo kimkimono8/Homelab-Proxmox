@@ -25,3 +25,6 @@ crash.log
 # Terraform Plan
 *.tfplan
 tfplan
+
+# AI Persona & Local Workspace Rules
+GEMINI.md
