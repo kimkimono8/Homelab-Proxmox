@@ -1,0 +1,8 @@
+---
+deluge_version: "2.1.1"
+deluge_venv_dir: "/opt/deluge-venv"
+deluge_user: "deluge"
+deluge_group: "deluge"
+deluge_uid: 1000
+deluge_gid: 1000
+deluge_port: 8112
