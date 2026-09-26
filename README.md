@@ -70,7 +70,7 @@ OS       : Proxmox VE 9.x (Debian 13 trixie, kernel 7.0.14-17-pve)
 | **CT 102** | `hermes` | Hermes AI Agent Autonomous CLI Runtime | Arch Linux | 2 | 1024 MB | 8 GB | `192.168.1.23` |
 | **CT 103** | `home-assistant` | Home Assistant Core (IoT Automation) | Debian 12 | 2 | 768 MB | 8 GB | `192.168.1.24` |
 | **CT 104** | `jellyfin` | Jellyfin Media Server (Native QSV + CFS Priority) | Debian 12 | 8 | 2048 MB | 16 GB | `192.168.1.25` |
-| **CT 105** | `deluge` | Deluge Torrent Daemon | Debian 12 | 1 | 256 MB | 8 GB | `192.168.1.26` |
+| **CT 105** | `deluge` | Deluge 2.1.1 Torrent Daemon (`uv` venv + libtorrent 2.0) | Debian 12 | 1 | 256 MB | 8 GB | `192.168.1.26` |
 | **CT 106** | `arr-stack` | Prowlarr + Radarr + Sonarr Automation | Debian 12 | 2 | 1536 MB | 8 GB | `192.168.1.27` |
 | **CT 108** | `tailscale` | Dedicated Subnet Router (`192.168.1.0/24`) & Exit Node | Debian 12 | 1 | 256 MB | 8 GB | `192.168.1.28` |
 | **CT 109** | `monitoring` | Prometheus, Alertmanager, and Grafana Stack | Debian 12 | 1 | 512 MB | 10 GB | `192.168.1.32` |
@@ -187,7 +187,8 @@ Homelab-Proxmox/
         │   ├── files/starship.toml
         │   ├── files/zshrc
         │   └── tasks/main.yaml
-        ├── deluge/                    # BitTorrent daemon & web UI
+        ├── deluge/                    # BitTorrent daemon & web UI (Deluge 2.1.1 via uv)
+        │   ├── defaults/main.yaml
         │   ├── handlers/main.yaml
         │   └── tasks/main.yaml
         ├── homeassistant/             # Home Assistant Core (Python venv)

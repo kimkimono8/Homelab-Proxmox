@@ -1,26 +1,66 @@
 ---
-- name: Install Deluge daemon and web interface packages
+- name: Ensure prerequisite system packages and python3-libtorrent are present
   ansible.builtin.apt:
     name:
-      - deluged
-      - deluge-web
+      - curl
+      - ca-certificates
+      - python3
+      - python3-libtorrent
     state: present
     update_cache: yes
     cache_valid_time: 3600
 
-- name: Ensure deluge service group exists (mapped to adminx GID 1000)
-  ansible.builtin.group:
-    name: deluge
-    gid: 1000
+- name: Ensure legacy APT deluge packages are removed
+  ansible.builtin.apt:
+    name:
+      - deluged
+      - deluge-web
+      - deluge-common
+      - deluge-console
+    state: absent
 
-- name: Ensure deluge service user exists (mapped to adminx UID 1000)
+- name: Ensure deluge service group exists (mapped to GID {{ deluge_gid }})
+  ansible.builtin.group:
+    name: "{{ deluge_group }}"
+    gid: "{{ deluge_gid }}"
+
+- name: Ensure deluge service user exists (mapped to UID {{ deluge_uid }})
   ansible.builtin.user:
-    name: deluge
-    uid: 1000
-    group: deluge
+    name: "{{ deluge_user }}"
+    uid: "{{ deluge_uid }}"
+    group: "{{ deluge_group }}"
     home: /var/lib/deluge
     shell: /bin/false
     create_home: yes
+
+- name: Install uv binary
+  ansible.builtin.shell: |
+    curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh
+  args:
+    creates: /usr/local/bin/uv
+
+- name: Ensure Deluge Python virtual environment exists with system site packages
+  ansible.builtin.command:
+    cmd: /usr/local/bin/uv venv --python /usr/bin/python3 --system-site-packages {{ deluge_venv_dir }}
+    creates: "{{ deluge_venv_dir }}/bin/python"
+
+- name: Install Deluge via uv in isolated virtual environment
+  ansible.builtin.command:
+    cmd: /usr/local/bin/uv pip install --python {{ deluge_venv_dir }}/bin/python "deluge=={{ deluge_version }}"
+  register: deluge_install_result
+  changed_when: "'Installed' in deluge_install_result.stdout or 'Upgraded' in deluge_install_result.stdout or 'Uninstalled' in deluge_install_result.stdout"
+  notify: Restart deluge services
+
+- name: Symlink deluge binaries to /usr/local/bin
+  ansible.builtin.file:
+    src: "{{ deluge_venv_dir }}/bin/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    state: link
+    force: yes
+  loop:
+    - deluged
+    - deluge-web
+    - deluge-console
 
 - name: Create systemd service for deluged
   ansible.builtin.copy:
@@ -35,10 +75,10 @@
 
       [Service]
       Type=simple
-      User=deluge
-      Group=deluge
+      User={{ deluge_user }}
+      Group={{ deluge_group }}
       UMask=000
-      ExecStart=/usr/bin/deluged -d
+      ExecStart={{ deluge_venv_dir }}/bin/deluged -d
       Restart=on-failure
 
       [Install]
@@ -59,10 +99,10 @@
 
       [Service]
       Type=simple
-      User=deluge
-      Group=deluge
+      User={{ deluge_user }}
+      Group={{ deluge_group }}
       UMask=000
-      ExecStart=/usr/bin/deluge-web -d -p 8112
+      ExecStart={{ deluge_venv_dir }}/bin/deluge-web -d -p {{ deluge_port }}
       Restart=on-failure
 
       [Install]
@@ -72,12 +112,12 @@
 - name: Ensure correct ownership on deluge data directories
   ansible.builtin.file:
     path: "{{ item }}"
-    owner: deluge
-    group: deluge
-    recurse: yes
+    owner: "{{ deluge_user }}"
+    group: "{{ deluge_group }}"
+    state: directory
+    mode: '0755'
   loop:
     - /var/lib/deluge
-    - /var/lib/deluged
 
 - name: Ensure deluge services are enabled and started
   ansible.builtin.systemd:
