@@ -31,8 +31,6 @@
         opts: "force,noatime,nodiratime,uid=0,gid=0,umask=000,iocharset=utf8,nofail,x-systemd.device-timeout=15s"
 
     storage_containers:
-      - id: 102
-        name: "Arch-server"
       - id: 104
         name: "Jellyfin"
       - id: 105
@@ -96,16 +94,10 @@
       loop: "{{ storage_containers }}"
       register: container_mounts
 
-    # 5. รีบูตคอนเทนเนอร์มีเดีย (104, 105, 106)
+    # 5. รีบูตคอนเทนเนอร์มีเดีย (104, 105, 106, 110)
     - name: Reboot remote media containers if storage config changed
       ansible.builtin.command:
         cmd: "pct reboot {{ item.item.id }}"
       loop: "{{ container_mounts.results }}"
-      when: item.changed and item.item.id != 102
+      when: item.changed
 
-    # 6. หน่วงเวลารีบูต CT 102 (Arch-server) 10 วินาที เพื่อให้ Ansible ทำงานจนจบ
-    - name: Schedule safe delayed reboot for Arch-server (CT 102) if changed
-      ansible.builtin.command:
-        cmd: "systemd-run --on-active=10s pct reboot 102"
-      loop: "{{ container_mounts.results }}"
-      when: item.changed and item.item.id == 102

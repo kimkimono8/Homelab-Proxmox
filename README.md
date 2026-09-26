@@ -12,7 +12,7 @@ Declarative, enterprise-grade Homelab infrastructure running on Proxmox VE (MSI 
 * **Process Priority Scheduling:** Intensive workloads (Jellyfin transcoding) utilize all available host CPU cores with high CFS time-slices (`CPUWeight=150`) and negative niceness (`Nice=-5`) without hard-locking cores[cite: 13].
 * **Fleet-Wide Remote Management:** Unified root password configuration and OpenSSH drop-ins enable direct access via Termius/mobile without disabling key security[cite: 13].
 * **Zero-Trust Remote Access:** Dedicated Tailscale Subnet Router (CT 108) exposes internal subnets (`192.168.1.0/24`) without opening edge firewall ports[cite: 12, 13].
-* **Apple-Optimized File Service:** CT 102 Samba daemon utilizes `catia`, `fruit`, and `streams_xattr` VFS modules for high-performance iOS/iPadOS Files app support[cite: 12, 13].
+* **Apple-Optimized File Service:** Native Samba daemon on Proxmox VE Host utilizes `catia`, `fruit`, and `streams_xattr` VFS modules with Avahi mDNS, sharing all 5 storage pools (`mp0`–`mp4`) directly to iOS/iPadOS/macOS.
 
 ---
 
@@ -63,16 +63,18 @@ OS       : Proxmox VE 9.x (Debian 13 trixie, kernel 7.0.14-17-pve)
 
 | Host / VMID | Hostname | Role / Service | OS | vCPU | RAM | Disk | IP Address |
 | :--- | :--- | :--- | :--- | :---: | :---: | :---: | :--- |
-| **Physical Host** | `pve` | Proxmox VE Hypervisor (GUI `:8006`) | Debian 13 (trixie) / PVE 9.x | 8 | ~3.1 GB | 250 GB NVMe + 3× 1TB HDD | `192.168.1.20` |
+| **Physical Host** | `pve` | Proxmox VE Hypervisor (GUI `:8006`), Storage & Native Apple Samba Gateway | Debian 13 (trixie) / PVE 9.x | 8 | ~3.1 GB | 250 GB NVMe + 3× 1TB HDD + 2× USB | `192.168.1.20` |
 | **CT 100** | `pihole` | Pi-hole v6 (Core DNS & Local Domain Resolver) | Debian 12 | 1 | 128 MB | 4 GB | `192.168.1.21` |
 | **CT 101** | `nginx` | Edge Ingress & Reverse Proxy (`*.home`) | Debian 12 | 1 | 128 MB | 4 GB | `192.168.1.22` |
-| **CT 102** | `Arch-server` | Control Plane, GitOps Runner & Apple Samba Server | Arch Linux | 2 | 512 MB | 16 GB | `192.168.1.23` |
+| **CT 102** | `Arch-server` | Decommissioned (Reclaimed 512 MB RAM / 2 vCPUs) | Arch Linux | - | - | - | `192.168.1.23` (stopped) |
 | **CT 103** | `home-assistant` | Home Assistant Core (IoT Automation) | Debian 12 | 2 | 768 MB | 8 GB | `192.168.1.24` |
-| **CT 104** | `jellyfin` | Jellyfin Media Server (Native QSV + CFS Priority) | Debian 12 | 8 | 1024 MB | 16 GB | `192.168.1.25` |
+| **CT 104** | `jellyfin` | Jellyfin Media Server (Native QSV + CFS Priority) | Debian 12 | 8 | 2048 MB | 16 GB | `192.168.1.25` |
 | **CT 105** | `deluge` | Deluge Torrent Daemon | Debian 12 | 1 | 256 MB | 8 GB | `192.168.1.26` |
 | **CT 106** | `arr-stack` | Prowlarr + Radarr + Sonarr Automation | Debian 12 | 2 | 1536 MB | 8 GB | `192.168.1.27` |
 | **CT 108** | `tailscale` | Dedicated Subnet Router (`192.168.1.0/24`) & Exit Node | Debian 12 | 1 | 256 MB | 8 GB | `192.168.1.28` |
 | **CT 107** | `hermes-agent` | Hermes AI Agent Runtime (active) | Debian 12 | 2 | 1024 MB | 8 GB | `192.168.1.31` |
+| **CT 109** | `monitoring` | Prometheus, Alertmanager, and Grafana Stack | Debian 12 | 1 | 512 MB | 10 GB | `192.168.1.32` |
+| **CT 110** | `photoprism` | PhotoPrism Ultra-Lightweight Engine | Debian 12 | 1 | 512 MB | 4 GB | `192.168.1.33` |
 | **VM 200** | `rocky-lab` | Enterprise Testing Sandbox (Rocky Linux) — *planned, not yet deployed* | Rocky 9 | 2 | 2048 MB | 20 GB | `192.168.1.29` (planned) |
 
 ---
