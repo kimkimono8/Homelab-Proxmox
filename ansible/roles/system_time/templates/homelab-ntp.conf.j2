@@ -1,0 +1,13 @@
+# Ansible managed: homelab NTP configuration drop-in for chrony
+{% for server in system_ntp_servers %}
+server {{ server }} iburst
+{% endfor %}
+
+# Allow local network clients to query PVE chrony NTP server
+allow {{ system_ntp_allow_subnet }}
+
+# Real-time hardware clock synchronization
+rtcsync
+
+# Step system clock immediately if skew is greater than 1s during initial sync
+makestep 1 3

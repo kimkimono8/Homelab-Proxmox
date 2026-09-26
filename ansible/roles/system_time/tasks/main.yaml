@@ -1,0 +1,53 @@
+---
+- name: Ensure tzdata package is present on Debian-based hosts
+  ansible.builtin.apt:
+    name: tzdata
+    state: present
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: Set system timezone across all cluster nodes
+  community.general.timezone:
+    name: "{{ system_timezone }}"
+  notify:
+    - Restart cron
+    - Restart systemd-journald
+
+- name: Configure NTP daemon and hardware clock on Proxmox VE host
+  when: inventory_hostname in groups.get('proxmox_nodes', [])
+  block:
+    - name: Ensure chrony NTP daemon is installed on PVE host
+      ansible.builtin.apt:
+        name: chrony
+        state: present
+
+    - name: Ensure chrony conf.d directory exists
+      ansible.builtin.file:
+        path: /etc/chrony/conf.d
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Deploy homelab chrony configuration drop-in
+      ansible.builtin.template:
+        src: homelab-ntp.conf.j2
+        dest: /etc/chrony/conf.d/homelab-ntp.conf
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart chrony
+
+    - name: Ensure chrony service is enabled and started on PVE host
+      ansible.builtin.systemd:
+        name: chrony
+        enabled: yes
+        state: started
+
+- name: Ensure systemd-timesyncd is disabled and masked on LXC containers
+  ansible.builtin.systemd:
+    name: systemd-timesyncd
+    enabled: no
+    state: stopped
+    masked: yes
+  when: inventory_hostname not in groups.get('proxmox_nodes', [])
+  failed_when: false

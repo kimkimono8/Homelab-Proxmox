@@ -1,0 +1,16 @@
+---
+- name: Restart chrony
+  ansible.builtin.systemd:
+    name: chrony
+    state: restarted
+
+- name: Restart cron
+  ansible.builtin.systemd:
+    name: cron
+    state: restarted
+  failed_when: false
+
+- name: Restart systemd-journald
+  ansible.builtin.systemd:
+    name: systemd-journald
+    state: restarted

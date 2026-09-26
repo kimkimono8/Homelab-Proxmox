@@ -164,6 +164,7 @@ Homelab-Proxmox/
     │   ├── configure-pve-storage.yaml   # High-throughput storage automation
     │   ├── configure-tailscale-lxc.yaml # PVE TUN device passthrough setup
     │   ├── set-root-password.yaml       # Fleet-wide mobile administration
+    │   ├── configure-time.yaml          # Cluster-wide timezone & NTP synchronization
     │   ├── deploy-shell.yaml            # Common Zsh/Starship environment
     │   ├── deploy-pihole.yaml           # Core DNS orchestration
     │   ├── deploy-nginx.yaml            # Ingress proxy configuration
@@ -213,9 +214,14 @@ Homelab-Proxmox/
         │   ├── handlers/main.yaml
         │   ├── tasks/main.yaml
         │   └── templates/smb.conf.j2
-        └── tailscale_node/            # Tailscale subnet router & IP forwarding
+        ├── tailscale_node/            # Tailscale subnet router & IP forwarding
+        │   ├── defaults/main.yaml
+        │   └── tasks/main.yaml
+        └── system_time/               # Cluster-wide timezone & NTP synchronization
             ├── defaults/main.yaml
-            └── tasks/main.yaml
+            ├── handlers/main.yaml
+            ├── tasks/main.yaml
+            └── templates/homelab-ntp.conf.j2
 ```
 
 ---
@@ -242,6 +248,9 @@ ansible-playbook -i inventory/hosts.yaml playbooks/configure-pve-storage.yaml
 
 # Remote Password Authentication Setup
 ansible-playbook -i inventory/hosts.yaml playbooks/set-root-password.yaml
+
+# Cluster-wide Timezone & NTP Synchronization (Host Chrony + Container Timezone)
+ansible-playbook -i inventory/hosts.yaml playbooks/configure-time.yaml
 ```
 
 ### 3. Deploy Core Network & Ingress Services (Ansible Day 1)

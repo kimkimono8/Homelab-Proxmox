@@ -1,0 +1,6 @@
+---
+- name: Configure Date, Timezone, and NTP Synchronization Cluster-Wide
+  hosts: all
+  become: yes
+  roles:
+    - system_time

@@ -1,0 +1,14 @@
+---
+# Default variables for system_time role
+system_timezone: "Asia/Bangkok"
+
+# NTP upstream servers for PVE physical host chrony daemon
+system_ntp_servers:
+  - "0.th.pool.ntp.org"
+  - "1.th.pool.ntp.org"
+  - "2.debian.pool.ntp.org"
+  - "time.cloudflare.com"
+  - "time.google.com"
+
+# Local subnet permitted to query PVE chrony NTP server
+system_ntp_allow_subnet: "192.168.1.0/24"
