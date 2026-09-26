@@ -45,8 +45,8 @@ locals {
       description  = "Jellyfin Media Server"
       ip_address   = "192.168.1.25/24"
       cores        = 8 # รักษาคอร์ประมวลผลสูงสุด
-      memory       = 1024
-      swap         = 512
+      memory       = 2048
+      swap         = 1024
       disk_size    = 16
       unprivileged = true
       keyctl       = false
@@ -150,4 +150,5 @@ module "containers" {
 
   unprivileged = lookup(each.value, "unprivileged", true)
   keyctl       = lookup(each.value, "keyctl", false)
+  password     = lookup(each.value, "password", var.lxc_default_password)
 }

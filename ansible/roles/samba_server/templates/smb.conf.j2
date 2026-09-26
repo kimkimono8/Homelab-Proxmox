@@ -1,7 +1,6 @@
-Warning: Identity file /root/.ssh/id_rsa not accessible: No such file or directory.
 [global]
    workgroup = WORKGROUP
-   server string = Arch-Server Samba
+   server string = Homelab PVE Samba
    server role = standalone server
    log file = /var/log/samba/%m.log
    max log size = 50
@@ -21,9 +20,39 @@ Warning: Identity file /root/.ssh/id_rsa not accessible: No such file or directo
    fruit:wipe_intentionally_left_blank_rfork = yes
    fruit:delete_empty_adfiles = yes
 
-[Downloads]
-   comment = Shared Mount Points
+[mnt-server]
+   comment = All Storage Mounts Root
    path = /mnt
+   browseable = yes
+   read only = no
+   guest ok = no
+   create mask = 0775
+   directory mask = 0775
+   valid users = {{ samba_user }}
+
+[backup]
+   comment = Backup Storage (mp0)
+   path = /mnt/backup
+   browseable = yes
+   read only = no
+   guest ok = no
+   create mask = 0775
+   directory mask = 0775
+   valid users = {{ samba_user }}
+
+[hdd2]
+   comment = Main Media HDD (mp1)
+   path = /mnt/hdd2
+   browseable = yes
+   read only = no
+   guest ok = no
+   create mask = 0775
+   directory mask = 0775
+   valid users = {{ samba_user }}
+
+[Downloads]
+   comment = Torrent Downloads (mp1/downloads)
+   path = /mnt/hdd2/downloads
    browseable = yes
    read only = no
    guest ok = no
@@ -31,19 +60,29 @@ Warning: Identity file /root/.ssh/id_rsa not accessible: No such file or directo
    directory mask = 0775
    valid users = {{ samba_user }}
 
-[Downloads]
-   comment = Shared Mount Points
-   path = /mnt
+[hdd3]
+   comment = Storage HDD 3 (mp2)
+   path = /mnt/hdd3
    browseable = yes
    read only = no
    guest ok = no
-   create mask = 0664
+   create mask = 0775
    directory mask = 0775
    valid users = {{ samba_user }}
 
-[RootFS]
-   comment = Entire Root Filesystem
-   path = /
+[usb1]
+   comment = External USB 1 (mp3)
+   path = /mnt/usb1
+   browseable = yes
+   read only = no
+   guest ok = no
+   create mask = 0775
+   directory mask = 0775
+   valid users = {{ samba_user }}
+
+[usb2]
+   comment = External USB 2 (mp4)
+   path = /mnt/usb2
    browseable = yes
    read only = no
    guest ok = no

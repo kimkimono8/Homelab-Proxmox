@@ -1,0 +1,4 @@
+---
+samba_user: "adminx"
+samba_uid: 101000
+samba_gid: 101000

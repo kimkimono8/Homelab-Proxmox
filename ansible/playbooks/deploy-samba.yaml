@@ -1,10 +1,9 @@
 ---
-- name: Deploy Declarative Samba Server on Arch-Server
-  hosts: localhost
-  connection: local
+- name: Deploy Declarative Apple Samba Server on PVE Host
+  hosts: pve
   vars_prompt:
     - name: samba_password
-      prompt: "Enter desired SMB password for adminx (for iPhone/iPad)"
+      prompt: "Enter desired SMB password for adminx (for iPhone/iPad/Mac)"
       private: yes
       confirm: yes
   vars:

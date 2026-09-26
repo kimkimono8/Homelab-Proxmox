@@ -10,6 +10,10 @@ Thumbs.db
 desktop.ini
 .BIN/
 
+# macOS metadata
+.DS_Store
+._*
+
 # Terraform
 **/.terraform/
 *.tfvars
@@ -21,3 +25,6 @@ crash.log
 # Terraform Plan
 *.tfplan
 tfplan
+
+# AI Persona & Local Workspace Rules
+GEMINI.md

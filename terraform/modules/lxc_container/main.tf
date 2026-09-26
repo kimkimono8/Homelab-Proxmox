@@ -15,7 +15,7 @@ resource "proxmox_virtual_environment_container" "this" {
     }
 
     user_account {
-      keys     = [trimspace(var.ssh_public_key)]
+      keys     = [for k in split("\n", trimspace(var.ssh_public_key)) : trimspace(k) if length(trimspace(k)) > 0]
       password = var.password
     }
 
@@ -58,6 +58,7 @@ resource "proxmox_virtual_environment_container" "this" {
     ignore_changes = [
       mount_point,
       description,
+      initialization[0].user_account,
     ]
   }
 }
