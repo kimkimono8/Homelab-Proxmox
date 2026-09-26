@@ -148,6 +148,7 @@
       User=media
       Group=media
       Type=simple
+      Environment=DOTNET_gcServer=0
       ExecStart={{ item.bin }} -nobrowser -data={{ item.data }}
       Restart=on-failure
 
