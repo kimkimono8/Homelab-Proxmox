@@ -78,19 +78,7 @@ locals {
       keyctl       = false
       tags         = ["media", "automation", "arr", "flaresolverr", "iac"]
     }
-    tailscale = {
-      vm_id        = 108
-      hostname     = "tailscale"
-      description  = "Tailscale Subnet Router & Exit Node Gateway"
-      ip_address   = "192.168.1.28/24"
-      cores        = 1
-      memory       = 256
-      swap         = 256
-      disk_size    = 8
-      unprivileged = true
-      keyctl       = false
-      tags         = ["network", "vpn", "tailscale", "iac"]
-    }
+
     hermes = {
       vm_id            = 102
       hostname         = "hermes"
